@@ -38,37 +38,65 @@ namespace HansLaserDateSerialDemo
             Size = new Size(1080, 720);
             Font = new Font("Microsoft YaHei UI", 9F);
 
+            TableLayoutPanel shell = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+            shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
+            shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            Controls.Add(shell);
+
             ToolStrip toolStrip = new ToolStrip
             {
-                Dock = DockStyle.Top,
+                Dock = DockStyle.Fill,
                 GripStyle = ToolStripGripStyle.Hidden,
-                Padding = new Padding(8, 4, 8, 4)
+                AutoSize = false,
+                Height = 44,
+                Margin = Padding.Empty,
+                Padding = new Padding(8, 6, 8, 6),
+                BackColor = Color.FromArgb(245, 247, 250)
             };
-            _settingsButton = new ToolStripButton("设置")
+            _settingsButton = new ToolStripButton("设置...")
             {
-                DisplayStyle = ToolStripItemDisplayStyle.Text
+                DisplayStyle = ToolStripItemDisplayStyle.Text,
+                AutoSize = false,
+                Width = 96,
+                Height = 32,
+                Margin = new Padding(0, 0, 8, 0),
+                Padding = new Padding(12, 0, 12, 0),
+                Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
+                BackColor = Color.FromArgb(0, 120, 215),
+                ForeColor = Color.White,
+                ToolTipText = "打开设置并应用配置"
             };
             _settingsButton.Click += async delegate { await OpenSettingsAsync(); };
             toolStrip.Items.Add(_settingsButton);
-            Controls.Add(toolStrip);
+            shell.Controls.Add(toolStrip, 0, 0);
 
             _status = new Label
             {
                 AutoSize = false,
-                Dock = DockStyle.Top,
-                Height = 36,
+                Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
                 Padding = new Padding(12, 9, 12, 0),
                 Text = "未应用配置",
                 BackColor = Color.FromArgb(245, 247, 250)
             };
-            Controls.Add(_status);
+            shell.Controls.Add(_status, 0, 1);
 
             Panel content = new Panel
             {
                 Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
                 Padding = new Padding(12)
             };
-            Controls.Add(content);
+            shell.Controls.Add(content, 0, 2);
             content.Controls.Add(BuildOperationPanel());
 
             Load += delegate { LoadConfiguration(); };

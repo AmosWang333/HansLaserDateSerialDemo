@@ -19,3 +19,17 @@ D:\RiderProjects\HansLaserDateSerialDemo\obj\VerifyBuild\config.json
 D:\RiderProjects\HansLaserDateSerialDemo\obj\VerifyBuild\HansLaserDateSerialDemo.exe.config
 D:\RiderProjects\HansLaserDateSerialDemo\obj\VerifyBuild\HansLaserDateSerialDemo.exe
 D:\RiderProjects\HansLaserDateSerialDemo\obj\VerifyBuild\HansLaserDateSerialDemo.pdb
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\bin\Debug\net48\config.json
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\bin\Debug\net48\HansLaserDateSerialDemo.exe.config
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\bin\Debug\net48\HansLaserDateSerialDemo.exe
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\bin\Debug\net48\HansLaserDateSerialDemo.pdb
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.csproj.AssemblyReference.cache
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.MainForm.resources
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.csproj.GenerateResource.cache
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.AssemblyInfoInputs.cache
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.AssemblyInfo.cs
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.sourcelink.json
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.exe
+C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.pdb

@@ -13,7 +13,31 @@
     <configurations />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fb5b8294-9c8e-4fe8-a7d5-9609cb5d97a2" name="更改" comment="" />
+    <list default="true" id="fb5b8294-9c8e-4fe8-a7d5-9609cb5d97a2" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.HansLaserDateSerialDemo.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.HansLaserDateSerialDemo.dir/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MainForm.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainForm.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/Debug/net48/HansLaserDateSerialDemo.exe" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net48/HansLaserDateSerialDemo.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/Debug/net48/HansLaserDateSerialDemo.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net48/HansLaserDateSerialDemo.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/.NETFramework,Version=v4.8.AssemblyAttributes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/.NETFramework,Version=v4.8.AssemblyAttributes.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.GeneratedMSBuildEditorConfig.editorconfig" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.GeneratedMSBuildEditorConfig.editorconfig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.assets.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.assets.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.AssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.AssemblyReference.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.CoreCompileInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.FileListAbsolute.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.GenerateResource.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.GenerateResource.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.exe" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.dgspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.dgspec.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.g.props" beforeDir="false" afterPath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.g.props" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.g.targets" beforeDir="false" afterPath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.g.targets" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/project.assets.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.assets.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/project.nuget.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.nuget.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/project.packagespec.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.packagespec.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/rider.project.model.nuget.info" beforeDir="false" afterPath="$PROJECT_DIR$/obj/rider.project.model.nuget.info" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/obj/rider.project.restore.info" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -23,11 +47,23 @@
     <option name="firstShow" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="10" />
+    <option name="cachedIndexableFilesCount" value="15" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;smartstone97&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:/smartstone97/HansLaserDateSerialDemo.git&quot;,
+    &quot;accountId&quot;: &quot;a1e4c97a-10d6-4b08-95c5-a801adeac812&quot;
+  }
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$USER_HOME$/.jetbrains/acp.json" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -37,23 +73,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000000458024496" />
-      <entry key="MS500" value="1.0340739583880199" />
-      <entry key="S2" value="1.5222147578405871" />
-      <entry key="S5" value="2.5729695180946086" />
-      <entry key="S10" value="4.339001861963942" />
-      <entry key="S30" value="8.865969978833544" />
-      <entry key="S60" value="11.976186153570344" />
-      <entry key="M2" value="15.575168547241994" />
-      <entry key="M5" value="24.27864764666758" />
-      <entry key="M10" value="34.62333317234685" />
-      <entry key="M15" value="42.17564310805562" />
-      <entry key="M30" value="60.54689766398472" />
-      <entry key="H1" value="88.06750766094504" />
-      <entry key="H2" value="118.24800119547763" />
-      <entry key="H4" value="142.2363942369289" />
-      <entry key="D1" value="169.51535949461154" />
-      <entry key="W1" value="175.04977187408" />
+      <entry key="MS100" value="1.0000000000000204" />
+      <entry key="MS500" value="1.00182753074289" />
+      <entry key="S2" value="1.2312344662217878" />
+      <entry key="S5" value="1.9433182228419998" />
+      <entry key="S10" value="3.0212263567488082" />
+      <entry key="S30" value="5.620944026650193" />
+      <entry key="S60" value="8.20588565735053" />
+      <entry key="M2" value="11.659576023359213" />
+      <entry key="M5" value="16.99509101433409" />
+      <entry key="M10" value="27.093741702762827" />
+      <entry key="M15" value="38.209825868539056" />
+      <entry key="M30" value="66.55326730943926" />
+      <entry key="H1" value="105.37011413308574" />
+      <entry key="H2" value="147.1263644851889" />
+      <entry key="H4" value="180.96828642286894" />
+      <entry key="D1" value="220.45146009516083" />
+      <entry key="W1" value="228.59689951420089" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -75,24 +111,27 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9726549919622648" />
-      <entry key="MS500" value="1.028355703458608" />
-      <entry key="S2" value="1.5200876521898243" />
-      <entry key="S5" value="2.571424426895564" />
-      <entry key="S10" value="4.337617272015952" />
-      <entry key="S30" value="8.864987919467891" />
-      <entry key="S60" value="11.975510861153547" />
-      <entry key="M2" value="15.574717855092956" />
-      <entry key="M5" value="24.27835414694981" />
-      <entry key="M10" value="34.62311917772054" />
-      <entry key="M15" value="42.17546584866754" />
-      <entry key="M30" value="60.54674963872832" />
-      <entry key="H1" value="88.06736546142606" />
-      <entry key="H2" value="118.24788387017543" />
-      <entry key="H4" value="142.23631542025447" />
-      <entry key="D1" value="169.51534233615882" />
-      <entry key="W1" value="175.0497693033988" />
+      <entry key="MS100" value="0.959264119325284" />
+      <entry key="MS500" value="0.9935291231649552" />
+      <entry key="S2" value="1.2286618983219522" />
+      <entry key="S5" value="1.9416241477240053" />
+      <entry key="S10" value="3.0198630594304796" />
+      <entry key="S30" value="5.62005855946267" />
+      <entry key="S60" value="8.205210906938051" />
+      <entry key="M2" value="11.659077237249365" />
+      <entry key="M5" value="16.994775873822753" />
+      <entry key="M10" value="27.093450216154935" />
+      <entry key="M15" value="38.20953734713778" />
+      <entry key="M30" value="66.55300886252732" />
+      <entry key="H1" value="105.3698968646506" />
+      <entry key="H2" value="147.12619946421236" />
+      <entry key="H4" value="180.96817853490137" />
+      <entry key="D1" value="220.4514368464531" />
+      <entry key="W1" value="228.59689603267597" />
     </decayedShown>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6,
@@ -111,6 +150,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "cidr.known.project.marker": "true",
@@ -122,7 +162,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "consents",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
