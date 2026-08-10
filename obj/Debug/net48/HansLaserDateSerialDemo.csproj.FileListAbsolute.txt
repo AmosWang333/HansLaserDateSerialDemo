@@ -33,3 +33,4 @@ C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\Han
 C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.sourcelink.json
 C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.exe
 C:\Users\Administrator\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.pdb
+D:\RiderProjects\HansLaserDateSerialDemo\obj\Debug\net48\HansLaserDateSerialDemo.sourcelink.json

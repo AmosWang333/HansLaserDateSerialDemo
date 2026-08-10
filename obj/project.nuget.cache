@@ -1,11 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "qk3IKE17xqo=",
+  "dgSpecHash": "hAHou1BxiGE=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Administrator\\RiderProjects\\HansLaserDateSerialDemo\\HansLaserDateSerialDemo.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.3\\microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
-    "C:\\Users\\Administrator\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net48\\1.0.3\\microsoft.netframework.referenceassemblies.net48.1.0.3.nupkg.sha512"
-  ],
+  "projectFilePath": "D:\\RiderProjects\\HansLaserDateSerialDemo\\HansLaserDateSerialDemo.csproj",
+  "expectedPackageFiles": [],
   "logs": []
 }
