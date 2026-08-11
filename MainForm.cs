@@ -33,7 +33,7 @@ namespace HansLaserDateSerialDemo
 
         public MainForm()
         {
-            Text = "大族激光日期流水号";
+            Text = "大族激光二开Demo";
             StartPosition = FormStartPosition.CenterScreen;
             MinimumSize = new Size(980, 680);
             Size = new Size(1080, 720);
