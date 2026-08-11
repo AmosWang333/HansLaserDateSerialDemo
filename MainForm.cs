@@ -335,7 +335,7 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                Log("载入配置失败：" + ex.Message);
+                Log($"载入配置失败：{ex.Message}");
                 SetStatus("配置载入失败", true);
             }
         }
@@ -352,7 +352,7 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                MessageBox.Show("载入配置失败：" + ex.Message, "设置", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"载入配置失败：{ex.Message}", "设置", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -377,7 +377,7 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                MessageBox.Show("载入已保存配置失败：" + ex.Message, "启动", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"载入已保存配置失败：{ex.Message}", "启动", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -470,12 +470,12 @@ namespace HansLaserDateSerialDemo
                 {
                     MarkEndStatus status = _api.MarkAndWait(true, false, 0, 30 * 1000);
                     AuditLog.Append(AuditFile, "PREVIEW", reservation.Code, status.ToString());
-                    BeginInvoke(new Action(delegate { Log("红光预览结束：" + status); }));
+                    BeginInvoke(new Action(delegate { Log($"红光预览结束：{status}"); }));
                 }
                 catch (Exception ex)
                 {
                     AuditLog.Append(AuditFile, "PREVIEW_ERROR", reservation.Code, ex.Message);
-                    BeginInvoke(new Action(delegate { Log("红光预览失败：" + ex.Message); }));
+                    BeginInvoke(new Action(delegate { Log($"红光预览失败：{ex.Message}"); }));
                 }
             });
         }
@@ -506,7 +506,7 @@ namespace HansLaserDateSerialDemo
                         overallTimeoutMs);
 
                     uint? markTime = _api.TryGetLastMarkTimeMs();
-                    string detail = status + (markTime.HasValue ? "; " + markTime.Value + " ms" : string.Empty);
+                    string detail = status + (markTime.HasValue ? $"; {markTime.Value} ms" : string.Empty);
 
                     if (status == MarkEndStatus.Normal)
                     {
@@ -514,7 +514,7 @@ namespace HansLaserDateSerialDemo
                         AuditLog.Append(AuditFile, "MARK_SUCCESS", reservation.Code, detail);
                         BeginInvoke(new Action(delegate
                         {
-                            Log("打标正常结束，编号已提交：" + reservation.Code);
+                            Log($"打标正常结束，编号已提交：{reservation.Code}");
                             ReserveAndDisplayCurrent();
                         }));
                         return;
@@ -523,7 +523,7 @@ namespace HansLaserDateSerialDemo
                     AuditLog.Append(AuditFile, "MARK_NOT_NORMAL", reservation.Code, detail);
                     BeginInvoke(new Action(delegate
                     {
-                        Log("打标未正常完成：" + status + "。编号仍处于待确认状态。");
+                        Log($"打标未正常完成：{status}。编号仍处于待确认状态。");
                         SetStatus("打标未正常完成，编号未提交", true);
                     }));
                 }
@@ -532,7 +532,7 @@ namespace HansLaserDateSerialDemo
                     AuditLog.Append(AuditFile, "MARK_ERROR", reservation.Code, ex.Message);
                     BeginInvoke(new Action(delegate
                     {
-                        Log("打标调用异常：" + ex.Message);
+                        Log($"打标调用异常：{ex.Message}");
                         SetStatus("打标异常，编号仍处于待确认状态", true);
                     }));
                 }
@@ -578,7 +578,7 @@ namespace HansLaserDateSerialDemo
                 _pendingWarning.Text = _reservation.WasAlreadyPending
                     ? "上次未确认完成；请检查工件/MES 后再重打或跳过。"
                     : "新编号已占用，等待预览、打标或确认跳过。";
-                SetStatus("当前编号：" + _reservation.Code, false);
+                SetStatus($"当前编号：{_reservation.Code}", false);
             }
             catch (Exception ex)
             {

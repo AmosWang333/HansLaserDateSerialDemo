@@ -244,7 +244,7 @@ namespace HansLaserDateSerialDemo
             int major = (value >> 12) & 0x0F;
             int minor = (value >> 7) & 0x1F;
             int patch = value & 0x7F;
-            return "V" + major + "." + minor + "." + patch;
+            return $"V{major}.{minor}.{patch}";
         }
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]

@@ -50,7 +50,7 @@ namespace HansLaserDateSerialDemo
         public static AppConfiguration LoadFromJson(string json, string sourceName)
         {
             if (json == null)
-                throw new ArgumentNullException("json");
+                throw new ArgumentNullException(nameof(json));
 
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AppConfiguration));
             using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(json.TrimStart('\uFEFF'))))
@@ -97,7 +97,7 @@ namespace HansLaserDateSerialDemo
                 throw new FileNotFoundException("找不到打标模板，请修改 config.json 中的 TemplatePath。", TemplatePath);
 
             if (!string.IsNullOrWhiteSpace(MachinePath) && !Directory.Exists(MachinePath))
-                throw new DirectoryNotFoundException("MachinePath 不存在：" + MachinePath);
+                throw new DirectoryNotFoundException($"MachinePath 不存在：{MachinePath}");
         }
 
         private void ApplyDefaults()
@@ -113,18 +113,18 @@ namespace HansLaserDateSerialDemo
         private void ValidateRequired(string sourceName)
         {
             if (string.IsNullOrWhiteSpace(DllPath))
-                throw new InvalidDataException(sourceName + " 缺少 DllPath。");
+                throw new InvalidDataException($"{sourceName} 缺少 DllPath。");
             if (string.IsNullOrWhiteSpace(MachinePath))
-                throw new InvalidDataException(sourceName + " 缺少 MachinePath。");
+                throw new InvalidDataException($"{sourceName} 缺少 MachinePath。");
             if (string.IsNullOrWhiteSpace(TemplatePath))
-                throw new InvalidDataException(sourceName + " 缺少 TemplatePath。");
+                throw new InvalidDataException($"{sourceName} 缺少 TemplatePath。");
             if (string.IsNullOrWhiteSpace(VariableTextAlias))
-                throw new InvalidDataException(sourceName + " 缺少 VariableTextAlias。");
+                throw new InvalidDataException($"{sourceName} 缺少 VariableTextAlias。");
             if (FootPedalTimeoutMs < 1000)
-                throw new InvalidDataException(sourceName + " 的 FootPedalTimeoutMs 至少应为 1000。");
+                throw new InvalidDataException($"{sourceName} 的 FootPedalTimeoutMs 至少应为 1000。");
             if (!string.Equals(CodeGeneratorType, CodeGeneratorTypes.Normal, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(CodeGeneratorType, CodeGeneratorTypes.EcoFlow, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException(sourceName + " 的 CodeGeneratorType 无效。");
+                throw new InvalidDataException($"{sourceName} 的 CodeGeneratorType 无效。");
         }
 
         private static void AppendJsonLine(StringBuilder builder, string name, string value, bool comma)

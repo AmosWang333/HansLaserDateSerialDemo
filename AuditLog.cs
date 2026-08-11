@@ -23,10 +23,7 @@ namespace HansLaserDateSerialDemo
                         writer.WriteLine("time,action,code,detail");
 
                     writer.WriteLine(
-                        Csv(DateTime.Now.ToString("o")) + "," +
-                        Csv(action) + "," +
-                        Csv(code) + "," +
-                        Csv(detail));
+                        $"{Csv(DateTime.Now.ToString("o"))},{Csv(action)},{Csv(code)},{Csv(detail)}");
                 }
             }
         }
@@ -34,7 +31,7 @@ namespace HansLaserDateSerialDemo
         private static string Csv(string value)
         {
             value = value ?? string.Empty;
-            return "\"" + value.Replace("\"", "\"\"") + "\"";
+            return $"\"{value.Replace("\"", "\"\"")}\"";
         }
     }
 }
