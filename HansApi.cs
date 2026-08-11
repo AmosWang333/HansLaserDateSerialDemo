@@ -1,7 +1,8 @@
-using System;
-using System.ComponentModel;
+﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 
 namespace HansLaserDateSerialDemo
@@ -29,99 +30,25 @@ namespace HansLaserDateSerialDemo
 
     internal sealed class HansApi : IDisposable
     {
-        private IntPtr _module;
         private bool _initialized;
-
-        private readonly GetDllVersionDelegate _getDllVersion;
-        private readonly InitialMachineDelegate _initialMachine;
-        private readonly CloseMachineDelegate _closeMachine;
-        private readonly LoadMarkFileDelegate _loadMarkFile;
-        private readonly ChangeTextByNameWDelegate _changeTextW;
-        private readonly ChangeTextByNameADelegate _changeTextA;
-        private readonly MarkDelegate _mark;
-        private readonly IsMarkEndDelegate _isMarkEnd;
-        private readonly MarkStopDelegate _markStop;
-        private readonly GetMarkTimeDelegate _getMarkTime;
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int GetDllVersionDelegate(out ushort mainVersion, out ushort dllVersion);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int InitialMachineDelegate(IntPtr path);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int CloseMachineDelegate();
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int LoadMarkFileDelegate(IntPtr fileName);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int ChangeTextByNameWDelegate(IntPtr textNameAnsi, IntPtr textValueUnicode);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int ChangeTextByNameADelegate(IntPtr textNameAnsi, IntPtr textValueAnsi);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int MarkDelegate(
-            int type,
-            int waitTouch,
-            int waitEnd,
-            int overTimeMs,
-            int markAll);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int IsMarkEndDelegate(out int flag);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int MarkStopDelegate();
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int GetMarkTimeDelegate(out uint markTimeMs);
 
         public HansApi(string dllPath)
         {
             if (string.IsNullOrWhiteSpace(dllPath))
                 throw new ArgumentException("DLL 路径不能为空。", "dllPath");
 
-            _module = LoadLibrary(dllPath);
-            if (_module == IntPtr.Zero)
-            {
-                throw new Win32Exception(
-                    Marshal.GetLastWin32Error(),
-                    "无法加载 " + dllPath + "。请检查路径、依赖 DLL 和 x86/x64 位数。");
-            }
-
-            try
-            {
-                _getDllVersion = GetRequired<GetDllVersionDelegate>("HS_GetDllVersion", 8);
-                _initialMachine = GetRequired<InitialMachineDelegate>("HS_InitialMachine", 4);
-                _closeMachine = GetRequired<CloseMachineDelegate>("HS_CloseMachine", 0);
-                _loadMarkFile = GetRequired<LoadMarkFileDelegate>("HS_LoadMarkFile", 4);
-
-                // 文档提供 Unicode 版本；若某套旧 DLL 没导出 W 版本，则退回 ANSI 版本。
-                _changeTextW = TryGet<ChangeTextByNameWDelegate>("HS_ChangeTextByNameW", 8);
-                _changeTextA = TryGet<ChangeTextByNameADelegate>("HS_ChangeTextByName", 8);
-                if (_changeTextW == null && _changeTextA == null)
-                    throw new MissingMethodException("DLL 中未找到 HS_ChangeTextByNameW/HS_ChangeTextByName。");
-
-                _mark = GetRequired<MarkDelegate>("HS_Mark", 20);
-                _isMarkEnd = GetRequired<IsMarkEndDelegate>("HS_IsMarkEnd", 4);
-                _markStop = GetRequired<MarkStopDelegate>("HS_MarkStop", 0);
-                _getMarkTime = TryGet<GetMarkTimeDelegate>("HS_GetMarkTime", 4);
-            }
-            catch
-            {
-                FreeLibrary(_module);
-                _module = IntPtr.Zero;
-                throw;
-            }
+            // CSharpInterface 使用 DllImport("HansAdvInterface.dll")，实际加载路径由系统 DLL 搜索路径决定。
+            // 这里把配置中的 DLL 目录加入搜索路径，避免必须把厂家 DLL 复制到程序目录。
+            string dllDirectory = Path.GetDirectoryName(Path.GetFullPath(dllPath));
+            if (!string.IsNullOrEmpty(dllDirectory))
+                SetDllDirectory(dllDirectory);
         }
 
         public string GetVersionText()
         {
-            ushort main;
-            ushort dll;
-            Check("HS_GetDllVersion", _getDllVersion(out main, out dll));
+            ushort main = 0;
+            ushort dll = 0;
+            Check("HS_GetDllVersion", CSharpInterface.HS_GetDllVersion(ref main, ref dll));
 
             return "所需主程序 " + DecodeVersion(main) +
                    "；接口 DLL " + DecodeVersion(dll) +
@@ -133,34 +60,14 @@ namespace HansLaserDateSerialDemo
             if (_initialized)
                 return;
 
-            IntPtr p = IntPtr.Zero;
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(machinePath))
-                    p = Marshal.StringToHGlobalAnsi(machinePath);
-
-                Check("HS_InitialMachine", _initialMachine(p));
-                _initialized = true;
-            }
-            finally
-            {
-                if (p != IntPtr.Zero)
-                    Marshal.FreeHGlobal(p);
-            }
+            Check("HS_InitialMachine", CSharpInterface.HS_InitialMachine(machinePath ?? string.Empty));
+            _initialized = true;
         }
 
         public void LoadTemplate(string templatePath)
         {
             EnsureInitialized();
-            IntPtr p = Marshal.StringToHGlobalAnsi(templatePath);
-            try
-            {
-                Check("HS_LoadMarkFile", _loadMarkFile(p));
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(p);
-            }
+            Check("HS_LoadMarkFile", CSharpInterface.HS_LoadMarkFile(templatePath));
         }
 
         public void SetVariableText(string alias, string value)
@@ -169,39 +76,19 @@ namespace HansLaserDateSerialDemo
             if (string.IsNullOrWhiteSpace(alias))
                 throw new ArgumentException("可变文本别名不能为空。", "alias");
 
-            IntPtr pAlias = Marshal.StringToHGlobalAnsi(alias);
             try
             {
-                if (_changeTextW != null)
-                {
-                    IntPtr pValueW = Marshal.StringToHGlobalUni(value);
-                    try
-                    {
-                        Check("HS_ChangeTextByNameW", _changeTextW(pAlias, pValueW));
-                    }
-                    finally
-                    {
-                        Marshal.FreeHGlobal(pValueW);
-                    }
-                }
-                else
-                {
-                    // 当前编号只包含 ASCII 字符，ANSI 回退不会丢失内容。
-                    IntPtr pValueA = Marshal.StringToHGlobalAnsi(value);
-                    try
-                    {
-                        Check("HS_ChangeTextByName", _changeTextA(pAlias, pValueA));
-                    }
-                    finally
-                    {
-                        Marshal.FreeHGlobal(pValueA);
-                    }
-                }
+                byte[] valueBytes = Encoding.Unicode.GetBytes((value ?? string.Empty) + "\0");
+                int rc = CSharpInterface.HS_ChangeTextByNameW(alias, valueBytes);
+                if (rc == 0)
+                    return;
             }
-            finally
+            catch (EntryPointNotFoundException)
             {
-                Marshal.FreeHGlobal(pAlias);
             }
+
+            // 兼容未实现 W 接口的旧版 DLL。当前流水号内容为 ASCII，ANSI 回退不会丢失数据。
+            Check("HS_ChangeTextByName", CSharpInterface.HS_ChangeTextByName(alias, value ?? string.Empty));
         }
 
         public MarkEndStatus MarkAndWait(
@@ -213,30 +100,35 @@ namespace HansLaserDateSerialDemo
             EnsureInitialized();
 
             int type = redLightPreview ? 1 : 0;
-            int rc = _mark(
-                type,
-                waitForFootPedal ? 1 : 0,
-                0, // 非阻塞；由 HS_IsMarkEnd 判断实际结束状态
-                footPedalTimeoutMs,
-                1); // 全部打标
-            Check("HS_Mark", rc);
+            Check(
+                "HS_Mark",
+                CSharpInterface.HS_Mark(
+                    type,
+                    waitForFootPedal,
+                    false,
+                    footPedalTimeoutMs,
+                    true));
 
             Stopwatch sw = Stopwatch.StartNew();
             while (true)
             {
-                int flag;
-                Check("HS_IsMarkEnd", _isMarkEnd(out flag));
+                int flag = 0;
+                Check("HS_IsMarkEnd", CSharpInterface.HS_IsMarkEnd(ref flag));
 
-                if (flag == (int)MarkEndStatus.Normal)
-                    return MarkEndStatus.Normal;
-                if (flag == (int)MarkEndStatus.Aborted)
-                    return MarkEndStatus.Aborted;
-                if (flag == (int)MarkEndStatus.DeviceError)
-                    return MarkEndStatus.DeviceError;
+                MarkEndStatus status = ToMarkEndStatus(flag);
+                if (status != MarkEndStatus.Running)
+                    return status;
 
                 if (overallTimeoutMs > 0 && sw.ElapsedMilliseconds > overallTimeoutMs)
                 {
-                    try { _markStop(); } catch { }
+                    try
+                    {
+                        CSharpInterface.HS_MarkStop();
+                    }
+                    catch
+                    {
+                    }
+
                     throw new TimeoutException("等待打标结束超时，已调用 HS_MarkStop。流水号未确认完成。");
                 }
 
@@ -246,29 +138,28 @@ namespace HansLaserDateSerialDemo
 
         public uint? TryGetLastMarkTimeMs()
         {
-            if (_getMarkTime == null)
-                return null;
-
-            uint value;
-            int rc = _getMarkTime(out value);
+            int value = 0;
+            int rc = CSharpInterface.HS_GetMarkTime(ref value);
             if (rc != 0)
                 return null;
-            return value;
+
+            return value < 0 ? (uint?)null : (uint)value;
         }
 
         public void Dispose()
         {
-            if (_initialized)
+            if (!_initialized)
+                return;
+
+            try
             {
-                try { _closeMachine(); } catch { }
-                _initialized = false;
+                CSharpInterface.HS_CloseMachine();
+            }
+            catch
+            {
             }
 
-            if (_module != IntPtr.Zero)
-            {
-                FreeLibrary(_module);
-                _module = IntPtr.Zero;
-            }
+            _initialized = false;
         }
 
         private void EnsureInitialized()
@@ -281,6 +172,18 @@ namespace HansLaserDateSerialDemo
         {
             if (rc != 0)
                 throw new HansApiException(operation, rc);
+        }
+
+        private static MarkEndStatus ToMarkEndStatus(int flag)
+        {
+            if (flag == (int)MarkEndStatus.Normal)
+                return MarkEndStatus.Normal;
+            if (flag == (int)MarkEndStatus.Aborted)
+                return MarkEndStatus.Aborted;
+            if (flag == (int)MarkEndStatus.DeviceError)
+                return MarkEndStatus.DeviceError;
+
+            return MarkEndStatus.Running;
         }
 
         public static string DescribeError(int code)
@@ -306,7 +209,15 @@ namespace HansLaserDateSerialDemo
                 case 16: return "空指针";
                 case 17: return "未找到指定文档";
                 case 100: return "未知错误";
-                default: return "未定义错误";
+                default:
+                    try
+                    {
+                        return CSharpInterface.GetError();
+                    }
+                    catch
+                    {
+                        return "未定义错误";
+                    }
             }
         }
 
@@ -318,36 +229,8 @@ namespace HansLaserDateSerialDemo
             return "V" + major + "." + minor + "." + patch;
         }
 
-        private T GetRequired<T>(string name, int stackBytes) where T : class
-        {
-            T value = TryGet<T>(name, stackBytes);
-            if (value == null)
-                throw new MissingMethodException("DLL 中未找到导出函数：" + name);
-            return value;
-        }
-
-        private T TryGet<T>(string name, int stackBytes) where T : class
-        {
-            IntPtr proc = GetProcAddress(_module, name);
-
-            // 某些 32 位 stdcall DLL 使用 _函数名@参数字节数 的导出名称。
-            if (proc == IntPtr.Zero && IntPtr.Size == 4)
-                proc = GetProcAddress(_module, "_" + name + "@" + stackBytes);
-
-            if (proc == IntPtr.Zero)
-                return null;
-
-            return (T)(object)Marshal.GetDelegateForFunctionPointer(proc, typeof(T));
-        }
-
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern IntPtr LoadLibrary(string lpFileName);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-        private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool FreeLibrary(IntPtr hModule);
+        private static extern bool SetDllDirectory(string lpPathName);
     }
 }

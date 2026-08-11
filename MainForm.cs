@@ -13,6 +13,7 @@ namespace HansLaserDateSerialDemo
         private const string AuditFile = @".\mark-audit.csv";
 
         private readonly ToolStripButton _settingsButton;
+        private readonly ToolStripButton _startButton;
         private readonly Label _status;
         private Label _codeValue;
         private Label _dateValue;
@@ -71,12 +72,27 @@ namespace HansLaserDateSerialDemo
                 Margin = new Padding(0, 0, 8, 0),
                 Padding = new Padding(12, 0, 12, 0),
                 Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
-                BackColor = Color.FromArgb(0, 120, 215),
-                ForeColor = Color.White,
                 ToolTipText = "打开设置并应用配置"
             };
             _settingsButton.Click += async delegate { await OpenSettingsAsync(); };
             toolStrip.Items.Add(_settingsButton);
+
+            _startButton = new ToolStripButton("启动")
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Text,
+                AutoSize = false,
+                Width = 96,
+                Height = 32,
+                Margin = new Padding(0, 0, 8, 0),
+                Padding = new Padding(12, 0, 12, 0),
+                Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
+                BackColor = Color.FromArgb(0, 120, 215),
+                ForeColor = Color.White,
+                ToolTipText = "按已保存配置初始化设备并加载模板"
+            };
+            _startButton.Click += async delegate { await StartWithSavedConfigurationAsync(); };
+            toolStrip.Items.Add(_startButton);
+
             shell.Controls.Add(toolStrip, 0, 0);
 
             _status = new Label
@@ -109,34 +125,55 @@ namespace HansLaserDateSerialDemo
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 4
+                RowCount = 4,
+                AutoSize = false
             };
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 140));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 100));
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-            GroupBox currentBox = new GroupBox { Dock = DockStyle.Fill, Text = "当前编号" };
+            GroupBox currentBox = new GroupBox
+            {
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 0, 0, 8),
+                Text = "当前编号"
+            };
             root.Controls.Add(currentBox, 0, 0);
 
-            TableLayoutPanel currentGrid = new TableLayoutPanel
+            FlowLayoutPanel currentFlow = new FlowLayoutPanel
             {
-                Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 4,
-                Padding = new Padding(14)
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Dock = DockStyle.Top,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoScroll = false,
+                Padding = new Padding(14, 12, 14, 10)
             };
-            currentGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
-            currentGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            currentBox.Controls.Add(currentGrid);
+            currentFlow.Resize += delegate
+            {
+                int rowWidth = currentFlow.ClientSize.Width - currentFlow.Padding.Left - currentFlow.Padding.Right;
+                foreach (Control child in currentFlow.Controls)
+                    child.Width = Math.Max(100, rowWidth);
+            };
+            currentBox.Controls.Add(currentFlow);
 
-            _codeValue = AddValueRow(currentGrid, 0, "编号", "--", 22F, true);
-            _dateValue = AddValueRow(currentGrid, 1, "日期", "--", 10F, false);
-            _serialValue = AddValueRow(currentGrid, 2, "流水号", "--", 10F, false);
-            _pendingWarning = AddValueRow(currentGrid, 3, "状态", "通过工具栏设置应用配置后显示待确认编号", 9F, false);
+            _codeValue = AddValueRow(currentFlow, "编号", "--", 22F, true);
+            _dateValue = AddValueRow(currentFlow, "日期", "--", 10F, false);
+            _serialValue = AddValueRow(currentFlow, "流水号", "--", 10F, false);
+            _pendingWarning = AddValueRow(currentFlow, "状态", "通过工具栏设置应用配置后显示待确认编号", 9F, false);
             _pendingWarning.ForeColor = Color.FromArgb(180, 96, 0);
 
-            GroupBox flowBox = new GroupBox { Dock = DockStyle.Fill, Text = "操作流程" };
+            GroupBox flowBox = new GroupBox
+            {
+                Dock = DockStyle.Fill,
+                Height = 140,
+                Margin = new Padding(0, 0, 0, 8),
+                Text = "操作流程"
+            };
             root.Controls.Add(flowBox, 0, 1);
 
             TableLayoutPanel flow = new TableLayoutPanel
@@ -157,6 +194,7 @@ namespace HansLaserDateSerialDemo
             TableLayoutPanel actions = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
+                Height = 100,
                 ColumnCount = 4,
                 RowCount = 1,
                 Padding = new Padding(0, 12, 0, 10)
@@ -174,7 +212,12 @@ namespace HansLaserDateSerialDemo
             _skipButton.Click += delegate { SkipOrConfirm(); };
             _exitButton.Click += delegate { Close(); };
 
-            GroupBox logBox = new GroupBox { Dock = DockStyle.Fill, Text = "运行日志" };
+            GroupBox logBox = new GroupBox
+            {
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0),
+                Text = "运行日志"
+            };
             root.Controls.Add(logBox, 0, 3);
             _log = new TextBox
             {
@@ -191,25 +234,46 @@ namespace HansLaserDateSerialDemo
             return root;
         }
 
-        private Label AddValueRow(TableLayoutPanel grid, int row, string label, string value, float fontSize, bool bold)
+        private Label AddValueRow(FlowLayoutPanel container, string label, string value, float fontSize, bool bold)
         {
-            grid.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            Font valueFont = new Font(Font.FontFamily, fontSize, bold ? FontStyle.Bold : FontStyle.Regular);
+            int rowHeight = Math.Max(28, TextRenderer.MeasureText(value, valueFont).Height + 8);
+
+            TableLayoutPanel row = new TableLayoutPanel
+            {
+                AutoSize = false,
+                Width = Math.Max(100, container.ClientSize.Width - container.Padding.Left - container.Padding.Right),
+                Height = rowHeight,
+                ColumnCount = 2,
+                RowCount = 1,
+                Margin = new Padding(0, 0, 0, 4),
+                Padding = Padding.Empty
+            };
+            row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+            row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            row.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            container.Controls.Add(row);
+
             Label name = new Label
             {
+                AutoSize = false,
                 Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
                 Text = label,
                 TextAlign = ContentAlignment.MiddleLeft
             };
-            grid.Controls.Add(name, 0, row);
+            row.Controls.Add(name, 0, 0);
 
             Label valueLabel = new Label
             {
+                AutoSize = false,
                 Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
                 Text = value,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font = new Font(Font.FontFamily, fontSize, bold ? FontStyle.Bold : FontStyle.Regular)
+                Font = valueFont
             };
-            grid.Controls.Add(valueLabel, 1, row);
+            row.Controls.Add(valueLabel, 1, 0);
             return valueLabel;
         }
 
@@ -297,15 +361,35 @@ namespace HansLaserDateSerialDemo
                 if (dialog.ShowDialog(this) != DialogResult.OK)
                     return;
 
-                await ApplyConfigurationAsync(dialog.Configuration);
+                await ApplyConfigurationAsync(dialog.Configuration, true);
             }
         }
 
-        private async Task ApplyConfigurationAsync(AppConfiguration configuration)
+        private async Task StartWithSavedConfigurationAsync()
+        {
+            if (_busy)
+                return;
+
+            AppConfiguration configuration;
+            try
+            {
+                configuration = AppConfiguration.Load(ConfigFile);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("载入已保存配置失败：" + ex.Message, "启动", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            await ApplyConfigurationAsync(configuration, false);
+        }
+
+        private async Task ApplyConfigurationAsync(AppConfiguration configuration, bool saveConfiguration)
         {
             await RunBusyAsync("正在应用配置……", delegate
             {
-                AppConfiguration.Save(ConfigFile, configuration);
+                if (saveConfiguration)
+                    AppConfiguration.Save(ConfigFile, configuration);
                 configuration.ValidateFiles();
 
                 HansApi newApi = new HansApi(configuration.DllPath);
@@ -321,7 +405,7 @@ namespace HansLaserDateSerialDemo
                         _api = newApi;
                         _configuration = configuration;
                         _store = new SequenceStore(StateFile);
-                        Log("配置已保存并应用：" + version);
+                        Log((saveConfiguration ? "配置已保存并应用：" : "已按保存配置启动：") + version);
                         ReserveAndDisplayCurrent();
                         SetStatus("配置已应用，模板已加载", false);
                     }));
@@ -512,6 +596,7 @@ namespace HansLaserDateSerialDemo
         {
             bool ready = !_busy && _api != null && _reservation != null;
             _settingsButton.Enabled = !_busy;
+            _startButton.Enabled = !_busy;
             _previewButton.Enabled = ready;
             _markButton.Enabled = ready;
             _skipButton.Enabled = ready;

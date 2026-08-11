@@ -81,6 +81,8 @@ namespace HansLaserDateSerialDemo
         {
             if (!File.Exists(DllPath))
                 throw new FileNotFoundException("找不到接口 DLL，请修改 config.json 中的 DllPath。", DllPath);
+            if (!string.Equals(Path.GetFileName(DllPath), "HansAdvInterface.dll", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("DllPath 必须指向 HansAdvInterface.dll。CSharpInterface.cs 固定导入该 DLL 名称。");
             if (!File.Exists(TemplatePath))
                 throw new FileNotFoundException("找不到打标模板，请修改 config.json 中的 TemplatePath。", TemplatePath);
 

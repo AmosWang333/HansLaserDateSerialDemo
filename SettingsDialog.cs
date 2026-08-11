@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace HansLaserDateSerialDemo
@@ -12,6 +13,7 @@ namespace HansLaserDateSerialDemo
         private readonly TextBox _variableTextAliasTextBox;
         private readonly CheckBox _useFootPedal;
         private readonly NumericUpDown _footPedalTimeoutSeconds;
+        private readonly Label _dllVersionLabel;
 
         public AppConfiguration Configuration { get; private set; }
 
@@ -25,7 +27,7 @@ namespace HansLaserDateSerialDemo
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
-            ClientSize = new Size(760, 420);
+            ClientSize = new Size(760, 468);
             Font = new Font("Microsoft YaHei UI", 9F);
 
             TableLayoutPanel root = new TableLayoutPanel
@@ -35,7 +37,7 @@ namespace HansLaserDateSerialDemo
                 RowCount = 3,
                 Padding = new Padding(14)
             };
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 232));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 280));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 100));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             Controls.Add(root);
@@ -51,19 +53,20 @@ namespace HansLaserDateSerialDemo
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 4,
+                RowCount = 5,
                 Padding = new Padding(12)
             };
             basicGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
             basicGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 5; i++)
                 basicGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
             basicBox.Controls.Add(basicGrid);
 
-            _dllPathTextBox = AddSettingTextBox(basicGrid, 0, "DllPath");
-            _machinePathTextBox = AddSettingTextBox(basicGrid, 1, "MachinePath");
-            _templatePathTextBox = AddSettingTextBox(basicGrid, 2, "TemplatePath");
-            _variableTextAliasTextBox = AddSettingTextBox(basicGrid, 3, "VariableTextAlias");
+            _dllPathTextBox = AddSettingTextBox(basicGrid, 0, "接口 DLL");
+            _dllVersionLabel = AddDllVersionRow(basicGrid, 1);
+            _machinePathTextBox = AddSettingTextBox(basicGrid, 2, "设备配置目录");
+            _templatePathTextBox = AddSettingTextBox(basicGrid, 3, "打标模板");
+            _variableTextAliasTextBox = AddSettingTextBox(basicGrid, 4, "可变文本别名");
 
             GroupBox pedalBox = new GroupBox
             {
@@ -77,7 +80,7 @@ namespace HansLaserDateSerialDemo
                 Left = 14,
                 Top = 28,
                 Width = 260,
-                Text = "UseFootPedal"
+                Text = "启用脚踏触发"
             };
             pedalBox.Controls.Add(_useFootPedal);
 
@@ -86,7 +89,7 @@ namespace HansLaserDateSerialDemo
                 Left = 300,
                 Top = 31,
                 Width = 150,
-                Text = "FootPedalTimeoutMs"
+                Text = "脚踏等待超时"
             };
             pedalBox.Controls.Add(timeoutLabel);
 
@@ -160,6 +163,46 @@ namespace HansLaserDateSerialDemo
             return textBox;
         }
 
+        private Label AddDllVersionRow(TableLayoutPanel grid, int row)
+        {
+            Label name = new Label
+            {
+                Dock = DockStyle.Fill,
+                Text = "DLL 版本",
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            grid.Controls.Add(name, 0, row);
+
+            TableLayoutPanel panel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                Margin = Padding.Empty
+            };
+            panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
+            panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            grid.Controls.Add(panel, 1, row);
+
+            Button readButton = new Button
+            {
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 8, 8, 6),
+                Text = "读取版本"
+            };
+            readButton.Click += delegate { ReadDllVersion(); };
+            panel.Controls.Add(readButton, 0, 0);
+
+            Label versionLabel = new Label
+            {
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Text = "未读取"
+            };
+            panel.Controls.Add(versionLabel, 1, 0);
+            return versionLabel;
+        }
+
         private void ShowConfiguration(AppConfiguration configuration)
         {
             _dllPathTextBox.Text = configuration.DllPath;
@@ -167,9 +210,45 @@ namespace HansLaserDateSerialDemo
             _templatePathTextBox.Text = configuration.TemplatePath;
             _variableTextAliasTextBox.Text = configuration.VariableTextAlias;
             _useFootPedal.Checked = configuration.UseFootPedal;
+            _dllVersionLabel.Text = "未读取";
             _footPedalTimeoutSeconds.Value = Math.Max(
                 _footPedalTimeoutSeconds.Minimum,
                 Math.Min(_footPedalTimeoutSeconds.Maximum, configuration.FootPedalTimeoutMs / 1000));
+        }
+
+        private void ReadDllVersion()
+        {
+            string dllPath = _dllPathTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(dllPath))
+            {
+                _dllVersionLabel.Text = "请先填写接口 DLL 路径";
+                return;
+            }
+
+            try
+            {
+                if (!File.Exists(dllPath))
+                {
+                    _dllVersionLabel.Text = "读取失败：找不到接口 DLL";
+                    return;
+                }
+
+                if (!string.Equals(Path.GetFileName(dllPath), "HansAdvInterface.dll",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    _dllVersionLabel.Text = "读取失败：请选择 HansAdvInterface.dll";
+                    return;
+                }
+
+                using (HansApi api = new HansApi(dllPath))
+                {
+                    _dllVersionLabel.Text = api.GetVersionText();
+                }
+            }
+            catch (Exception ex)
+            {
+                _dllVersionLabel.Text = "读取失败：" + ex.Message;
+            }
         }
 
         private void SaveAndClose()
