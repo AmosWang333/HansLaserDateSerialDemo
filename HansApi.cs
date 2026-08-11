@@ -21,7 +21,7 @@ namespace HansLaserDateSerialDemo
         public string Operation { get; private set; }
 
         public HansApiException(string operation, int errorCode)
-            : base(operation + " 失败，错误码 " + errorCode + "：" + HansApi.DescribeError(errorCode))
+            : base($"{operation} 失败，错误码 {errorCode}：{HansApi.DescribeError(errorCode)}")
         {
             Operation = operation;
             ErrorCode = errorCode;
@@ -31,11 +31,12 @@ namespace HansLaserDateSerialDemo
     internal sealed class HansApi : IDisposable
     {
         private bool _initialized;
+        private string _templatePath;
 
         public HansApi(string dllPath)
         {
             if (string.IsNullOrWhiteSpace(dllPath))
-                throw new ArgumentException("DLL 路径不能为空。", "dllPath");
+                throw new ArgumentException("DLL 路径不能为空。", nameof(dllPath));
 
             // CSharpInterface 使用 DllImport("HansAdvInterface.dll")，实际加载路径由系统 DLL 搜索路径决定。
             // 这里把配置中的 DLL 目录加入搜索路径，避免必须把厂家 DLL 复制到程序目录。
@@ -50,9 +51,7 @@ namespace HansLaserDateSerialDemo
             ushort dll = 0;
             Check("HS_GetDllVersion", CSharpInterface.HS_GetDllVersion(ref main, ref dll));
 
-            return "所需主程序 " + DecodeVersion(main) +
-                   "；接口 DLL " + DecodeVersion(dll) +
-                   "（原始值 " + main + "/" + dll + "）";
+            return $"所需主程序 {DecodeVersion(main)}；接口 DLL {DecodeVersion(dll)}（原始值 {main}/{dll}）";
         }
 
         public void Initialize(string machinePath)
@@ -68,13 +67,14 @@ namespace HansLaserDateSerialDemo
         {
             EnsureInitialized();
             Check("HS_LoadMarkFile", CSharpInterface.HS_LoadMarkFile(templatePath));
+            _templatePath = templatePath;
         }
 
         public void SetVariableText(string alias, string value)
         {
             EnsureInitialized();
             if (string.IsNullOrWhiteSpace(alias))
-                throw new ArgumentException("可变文本别名不能为空。", "alias");
+                throw new ArgumentException("可变文本别名不能为空。", nameof(alias));
 
             try
             {
@@ -107,7 +107,8 @@ namespace HansLaserDateSerialDemo
                     waitForFootPedal,
                     false,
                     footPedalTimeoutMs,
-                    true));
+                    true)
+            );
 
             Stopwatch sw = Stopwatch.StartNew();
             while (true)
@@ -127,6 +128,7 @@ namespace HansLaserDateSerialDemo
                     }
                     catch
                     {
+                        // ignored
                     }
 
                     throw new TimeoutException("等待打标结束超时，已调用 HS_MarkStop。流水号未确认完成。");
@@ -151,12 +153,27 @@ namespace HansLaserDateSerialDemo
             if (!_initialized)
                 return;
 
+            if (!string.IsNullOrWhiteSpace(_templatePath))
+            {
+                try
+                {
+                    CSharpInterface.HS_CloseMarkFile(_templatePath, false);
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                _templatePath = null;
+            }
+
             try
             {
                 CSharpInterface.HS_CloseMachine();
             }
             catch
             {
+                // ignored
             }
 
             _initialized = false;
@@ -208,6 +225,7 @@ namespace HansLaserDateSerialDemo
                 case 15: return "缓冲区不足";
                 case 16: return "空指针";
                 case 17: return "未找到指定文档";
+                case 18: return "命令执行失效";
                 case 100: return "未知错误";
                 default:
                     try

@@ -392,6 +392,12 @@ namespace HansLaserDateSerialDemo
                     AppConfiguration.Save(ConfigFile, configuration);
                 configuration.ValidateFiles();
 
+                Invoke(new Action(delegate
+                {
+                    DisposeApi();
+                    ClearCurrentReservation("正在重新应用配置，旧设备会话已关闭。");
+                }));
+
                 HansApi newApi = new HansApi(configuration.DllPath);
                 try
                 {
@@ -404,7 +410,9 @@ namespace HansLaserDateSerialDemo
                         DisposeApi();
                         _api = newApi;
                         _configuration = configuration;
-                        _store = new SequenceStore(StateFile);
+                        _store = new SequenceStore(
+                            StateFile,
+                            CodeGeneratorFactory.Create(configuration.CodeGeneratorType, configuration.CodePattern));
                         Log((saveConfiguration ? "配置已保存并应用：" : "已按保存配置启动：") + version);
                         ReserveAndDisplayCurrent();
                         SetStatus("配置已应用，模板已加载", false);
@@ -416,6 +424,17 @@ namespace HansLaserDateSerialDemo
                     throw;
                 }
             });
+        }
+
+        private void ClearCurrentReservation(string message)
+        {
+            _store = null;
+            _reservation = null;
+            _codeValue.Text = "--";
+            _dateValue.Text = "--";
+            _serialValue.Text = "--";
+            _pendingWarning.Text = message;
+            UpdateActionButtons();
         }
 
         private AppConfiguration LoadOrCreateConfiguration()
@@ -431,7 +450,9 @@ namespace HansLaserDateSerialDemo
                 TemplatePath = @"C:\HansMark\Templates\DateSerial.HS",
                 VariableTextAlias = "CODE",
                 UseFootPedal = AppConfiguration.DefaultUseFootPedal,
-                FootPedalTimeoutMs = AppConfiguration.DefaultFootPedalTimeoutMs
+                FootPedalTimeoutMs = AppConfiguration.DefaultFootPedalTimeoutMs,
+                CodeGeneratorType = AppConfiguration.DefaultCodeGeneratorType,
+                CodePattern = AppConfiguration.DefaultCodePattern
             };
             AppConfiguration.Save(ConfigFile, configuration);
             return configuration;
@@ -524,7 +545,7 @@ namespace HansLaserDateSerialDemo
                 return;
 
             DialogResult result = MessageBox.Show(
-                "确认编号 " + _reservation.Code + " 已经使用或必须跳过？",
+                $"确认编号 {_reservation.Code} 已经使用或必须跳过？",
                 "确认已用/跳过",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning,
@@ -535,7 +556,7 @@ namespace HansLaserDateSerialDemo
 
             _store.SkipOrConfirmAlreadyMarked(_reservation.Code);
             AuditLog.Append(AuditFile, "SKIP_OR_CONFIRMED", _reservation.Code, "操作员确认该编号已使用或应跳过");
-            Log("已确认编号已用/跳过：" + _reservation.Code);
+            Log($"已确认编号已用/跳过：{_reservation.Code}");
             ReserveAndDisplayCurrent();
         }
 
@@ -549,7 +570,7 @@ namespace HansLaserDateSerialDemo
                     AuditFile,
                     _reservation.WasAlreadyPending ? "RESUME_PENDING" : "RESERVE",
                     _reservation.Code,
-                    _reservation.Date.ToString("yyyy-MM-dd") + "/" + _reservation.Serial);
+                    $"{_reservation.Date:yyyy-MM-dd}/{_reservation.Serial}");
 
                 _codeValue.Text = _reservation.Code;
                 _dateValue.Text = _reservation.Date.ToString("yyyy-MM-dd");
@@ -561,7 +582,7 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                Log("准备当前编号失败：" + ex.Message);
+                Log($"准备当前编号失败：{ex.Message}");
                 SetStatus("准备当前编号失败", true);
             }
             finally
@@ -582,7 +603,7 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                Log("操作失败：" + ex.Message);
+                Log($"操作失败：{ex.Message}");
                 SetStatus("操作失败", true);
             }
             finally
@@ -611,7 +632,7 @@ namespace HansLaserDateSerialDemo
 
         private void Log(string message)
         {
-            _log.AppendText(DateTime.Now.ToString("HH:mm:ss") + "  " + message + Environment.NewLine);
+            _log.AppendText($"{DateTime.Now:HH:mm:ss}  {message}{Environment.NewLine}");
         }
 
         private void DisposeApi()
