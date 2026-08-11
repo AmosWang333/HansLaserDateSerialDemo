@@ -15,28 +15,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fb5b8294-9c8e-4fe8-a7d5-9609cb5d97a2" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.HansLaserDateSerialDemo.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.HansLaserDateSerialDemo.dir/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MainForm.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainForm.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/Debug/net48/HansLaserDateSerialDemo.exe" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net48/HansLaserDateSerialDemo.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/Debug/net48/HansLaserDateSerialDemo.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/bin/Debug/net48/HansLaserDateSerialDemo.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/.NETFramework,Version=v4.8.AssemblyAttributes.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/.NETFramework,Version=v4.8.AssemblyAttributes.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.AssemblyInfo.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.AssemblyInfoInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.GeneratedMSBuildEditorConfig.editorconfig" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.GeneratedMSBuildEditorConfig.editorconfig" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.assets.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.assets.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.AssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.AssemblyReference.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.CoreCompileInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.FileListAbsolute.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.GenerateResource.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.csproj.GenerateResource.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.exe" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/obj/Debug/net48/HansLaserDateSerialDemo.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.dgspec.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.dgspec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.g.props" beforeDir="false" afterPath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.g.props" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.g.targets" beforeDir="false" afterPath="$PROJECT_DIR$/obj/HansLaserDateSerialDemo.csproj.nuget.g.targets" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/project.assets.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.assets.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/project.nuget.cache" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.nuget.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/project.packagespec.json" beforeDir="false" afterPath="$PROJECT_DIR$/obj/project.packagespec.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/rider.project.model.nuget.info" beforeDir="false" afterPath="$PROJECT_DIR$/obj/rider.project.model.nuget.info" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/obj/rider.project.restore.info" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HansLaserDateSerialDemo.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/HansLaserDateSerialDemo.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,30 +45,32 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$USER_HOME$/.jetbrains/acp.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/resource/00000000000000000000000000000000/04/ec08522f/16-1-2052-HansAdvInterface.txt" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000000000000204" />
-      <entry key="MS500" value="1.00182753074289" />
-      <entry key="S2" value="1.2312344662217878" />
-      <entry key="S5" value="1.9433182228419998" />
-      <entry key="S10" value="3.0212263567488082" />
-      <entry key="S30" value="5.620944026650193" />
-      <entry key="S60" value="8.20588565735053" />
-      <entry key="M2" value="11.659576023359213" />
-      <entry key="M5" value="16.99509101433409" />
-      <entry key="M10" value="27.093741702762827" />
-      <entry key="M15" value="38.209825868539056" />
-      <entry key="M30" value="66.55326730943926" />
-      <entry key="H1" value="105.37011413308574" />
-      <entry key="H2" value="147.1263644851889" />
-      <entry key="H4" value="180.96828642286894" />
-      <entry key="D1" value="220.45146009516083" />
-      <entry key="W1" value="228.59689951420089" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0" />
+      <entry key="S30" value="1.0" />
+      <entry key="S60" value="1.0" />
+      <entry key="M2" value="1.0000000000000882" />
+      <entry key="M5" value="1.0000165564228827" />
+      <entry key="M10" value="1.024042968157553" />
+      <entry key="M15" value="1.347276736112701" />
+      <entry key="M30" value="7.324282495205102" />
+      <entry key="H1" value="33.56519352798505" />
+      <entry key="H2" value="83.10232590006332" />
+      <entry key="H4" value="136.7520549007102" />
+      <entry key="D1" value="212.65405663024566" />
+      <entry key="W1" value="229.96358969609366" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -111,23 +92,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.959264119325284" />
-      <entry key="MS500" value="0.9935291231649552" />
-      <entry key="S2" value="1.2286618983219522" />
-      <entry key="S5" value="1.9416241477240053" />
-      <entry key="S10" value="3.0198630594304796" />
-      <entry key="S30" value="5.62005855946267" />
-      <entry key="S60" value="8.205210906938051" />
-      <entry key="M2" value="11.659077237249365" />
-      <entry key="M5" value="16.994775873822753" />
-      <entry key="M10" value="27.093450216154935" />
-      <entry key="M15" value="38.20953734713778" />
-      <entry key="M30" value="66.55300886252732" />
-      <entry key="H1" value="105.3698968646506" />
-      <entry key="H2" value="147.12619946421236" />
-      <entry key="H4" value="180.96817853490137" />
-      <entry key="D1" value="220.4514368464531" />
-      <entry key="W1" value="228.59689603267597" />
+      <entry key="MS100" value="0.6461764153187461" />
+      <entry key="MS500" value="0.9163686446753513" />
+      <entry key="S2" value="0.9784025031628331" />
+      <entry key="S5" value="0.9913043730981023" />
+      <entry key="S10" value="0.9956426934890359" />
+      <entry key="S30" value="0.9985454498058832" />
+      <entry key="S60" value="0.9992724602458948" />
+      <entry key="M2" value="0.9996361639346942" />
+      <entry key="M5" value="0.9998710056815351" />
+      <entry key="M10" value="1.0239698704879936" />
+      <entry key="M15" value="1.3472251639430293" />
+      <entry key="M30" value="7.324231354736615" />
+      <entry key="H1" value="33.56511049474241" />
+      <entry key="H2" value="83.10222443469003" />
+      <entry key="H4" value="136.75196875485992" />
+      <entry key="D1" value="212.65403334832874" />
+      <entry key="W1" value="229.96358606916556" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -142,30 +123,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;.NET 项目.HansLaserDateSerialDemo.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;consents&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    ".NET 项目.HansLaserDateSerialDemo.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "cidr.known.project.marker": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="HansLaserDateSerialDemo" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="" />
@@ -204,14 +185,46 @@
       <workItem from="1784074153049" duration="663000" />
       <workItem from="1784074844593" duration="8001000" />
     </task>
+    <task id="LOCAL-00001" summary="update">
+      <option name="closed" value="true" />
+      <created>1786406066860</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1786406066860</updated>
+    </task>
+    <task id="LOCAL-00002" summary="delete">
+      <option name="closed" value="true" />
+      <created>1786407070781</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1786407070781</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="update" />
+    <MESSAGE value="delete" />
+    <option name="LAST_COMMIT_MESSAGE" value="delete" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
