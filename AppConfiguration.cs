@@ -12,7 +12,7 @@ namespace HansLaserDateSerialDemo
         public const bool DefaultUseFootPedal = false;
         public const int DefaultFootPedalTimeoutMs = 10 * 60 * 1000;
         public const string DefaultCodeGeneratorType = CodeGeneratorTypes.EcoFlow;
-        public const string DefaultCodePattern = "";
+        public const int DefaultProductId = 0;
 
         public string DllPath
         {
@@ -22,7 +22,7 @@ namespace HansLaserDateSerialDemo
         [DataMember(IsRequired = true, Order = 1)]
         public string MachinePath { get; set; }
 
-        [DataMember(IsRequired = true, Order = 2)]
+        [DataMember(IsRequired = false, Order = 2)]
         public string TemplatePath { get; set; }
 
         [DataMember(IsRequired = true, Order = 3)]
@@ -38,6 +38,9 @@ namespace HansLaserDateSerialDemo
         public string CodeGeneratorType { get; set; }
 
         [DataMember(IsRequired = false, Order = 7)]
+        public int ProductId { get; set; }
+
+        [DataMember(IsRequired = false, Order = 8)]
         public string CodePattern { get; set; }
 
         public static AppConfiguration Load(string fileName)
@@ -78,12 +81,11 @@ namespace HansLaserDateSerialDemo
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("{");
             AppendJsonLine(builder, "MachinePath", MachinePath, true);
-            AppendJsonLine(builder, "TemplatePath", TemplatePath, true);
             AppendJsonLine(builder, "VariableTextAlias", VariableTextAlias, true);
             builder.Append("  \"UseFootPedal\": ").Append(UseFootPedal ? "true" : "false").AppendLine(",");
             builder.Append("  \"FootPedalTimeoutMs\": ").Append(FootPedalTimeoutMs).AppendLine(",");
             AppendJsonLine(builder, "CodeGeneratorType", CodeGeneratorType, true);
-            AppendJsonLine(builder, "CodePattern", CodePattern, false);
+            builder.Append("  \"ProductId\": ").Append(ProductId).AppendLine();
             builder.AppendLine("}");
             return builder.ToString();
         }
@@ -94,8 +96,6 @@ namespace HansLaserDateSerialDemo
                 throw new DirectoryNotFoundException($"MachinePath 不存在：{MachinePath}");
             if (!File.Exists(DllPath))
                 throw new FileNotFoundException("找不到接口 DLL，请确认 MachinePath 下存在 HansAdvInterface.dll。", DllPath);
-            if (!File.Exists(TemplatePath))
-                throw new FileNotFoundException("找不到打标模板，请修改 config.json 中的 TemplatePath。", TemplatePath);
         }
 
         private void ApplyDefaults()
@@ -104,16 +104,14 @@ namespace HansLaserDateSerialDemo
                 FootPedalTimeoutMs = DefaultFootPedalTimeoutMs;
             if (string.IsNullOrWhiteSpace(CodeGeneratorType))
                 CodeGeneratorType = DefaultCodeGeneratorType;
-            if (CodePattern == null)
-                CodePattern = DefaultCodePattern;
+            if (ProductId < 0)
+                ProductId = DefaultProductId;
         }
 
         private void ValidateRequired(string sourceName)
         {
             if (string.IsNullOrWhiteSpace(MachinePath))
                 throw new InvalidDataException($"{sourceName} 缺少 MachinePath。");
-            if (string.IsNullOrWhiteSpace(TemplatePath))
-                throw new InvalidDataException($"{sourceName} 缺少 TemplatePath。");
             if (string.IsNullOrWhiteSpace(VariableTextAlias))
                 throw new InvalidDataException($"{sourceName} 缺少 VariableTextAlias。");
             if (FootPedalTimeoutMs < 1000)

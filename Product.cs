@@ -1,12 +1,14 @@
-﻿namespace HansLaserDateSerialDemo
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HansLaserDateSerialDemo
 {
     public class Product
     {
-        int id { get; set; }
-        string name { get; set; }
-        string customerPartNumber { get; set; }
-        int shipcode { get; set; }
-        string templatePath { get; set; }
-        string pattern { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string CustomerPartNumber { get; set; }
+        public int Shipcode { get; set; }
+        public string TemplatePath { get; set; }
+        public string Pattern { get; set; }
     }
 }

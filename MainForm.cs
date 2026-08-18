@@ -390,7 +390,9 @@ namespace HansLaserDateSerialDemo
             {
                 if (saveConfiguration)
                     AppConfiguration.Save(ConfigFile, configuration);
+                Product product = ResolveSelectedProduct(configuration);
                 configuration.ValidateFiles();
+                ValidateProductTemplate(product);
 
                 Invoke(new Action(delegate
                 {
@@ -402,7 +404,7 @@ namespace HansLaserDateSerialDemo
                 try
                 {
                     newApi.Initialize(configuration.MachinePath);
-                    newApi.LoadTemplate(configuration.TemplatePath);
+                    newApi.LoadTemplate(product.TemplatePath);
                     string version = newApi.GetVersionText();
 
                     BeginInvoke(new Action(delegate
@@ -412,7 +414,7 @@ namespace HansLaserDateSerialDemo
                         _configuration = configuration;
                         _store = new SequenceStore(
                             StateFile,
-                            CodeGeneratorFactory.Create(configuration.CodeGeneratorType, configuration.CodePattern));
+                            CodeGeneratorFactory.Create(configuration.CodeGeneratorType, product.Pattern));
                         Log((saveConfiguration ? "配置已保存并应用：" : "已按保存配置启动：") + version);
                         ReserveAndDisplayCurrent();
                         SetStatus("配置已应用，模板已加载", false);
@@ -451,10 +453,35 @@ namespace HansLaserDateSerialDemo
                 UseFootPedal = AppConfiguration.DefaultUseFootPedal,
                 FootPedalTimeoutMs = AppConfiguration.DefaultFootPedalTimeoutMs,
                 CodeGeneratorType = AppConfiguration.DefaultCodeGeneratorType,
-                CodePattern = AppConfiguration.DefaultCodePattern
+                ProductId = AppConfiguration.DefaultProductId
             };
             AppConfiguration.Save(ConfigFile, configuration);
             return configuration;
+        }
+
+        private static Product ResolveSelectedProduct(AppConfiguration configuration)
+        {
+            using (AppDbContext dbContext = new AppDbContext())
+            {
+                ProductService productService = new ProductService(dbContext);
+                Product product = configuration.ProductId > 0
+                    ? productService.GetProduct(configuration.ProductId)
+                    : null;
+
+                if (product == null)
+                    throw new InvalidOperationException("请先在设置中选择产品。");
+
+                return product;
+            }
+        }
+
+        private static void ValidateProductTemplate(Product product)
+        {
+            if (string.IsNullOrWhiteSpace(product.TemplatePath))
+                throw new InvalidDataException("产品缺少打标模板。");
+
+            if (!File.Exists(product.TemplatePath))
+                throw new FileNotFoundException("找不到产品打标模板。", product.TemplatePath);
         }
 
         private async Task PreviewAsync()

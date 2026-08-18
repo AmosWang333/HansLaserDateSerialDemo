@@ -415,7 +415,7 @@ namespace HansLaserDateSerialDemo
     [StructLayout(LayoutKind.Sequential)]
     public struct CInterStroke
     {
-        [MarshalAs(UnmanagedType.ByValArray)] public CInterDot[] m_dotArray;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)] public CInterDot[] m_dotArray;
         [MarshalAs(UnmanagedType.U4)] public int m_nLayer;
     };
 }
