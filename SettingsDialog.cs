@@ -155,7 +155,8 @@ namespace HansLaserDateSerialDemo
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowHeadersVisible = false
             };
-            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "+", Text = "+", UseColumnTextForButtonValue = true, Width = 36 });
+            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "新增", Text = "+", UseColumnTextForButtonValue = true, Width = 36 });
+            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "删除", Text = "X", UseColumnTextForButtonValue = true, Width = 36 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "名称", DataPropertyName = "Name", Width = 150 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 150 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 90 });
@@ -165,6 +166,8 @@ namespace HansLaserDateSerialDemo
             {
                 if (e.RowIndex >= 0 && e.ColumnIndex == 0)
                     AddProductRow();
+                else if (e.RowIndex >= 0 && e.ColumnIndex == 1)
+                    DeleteProductAtRow(e.RowIndex);
             };
             _productsGrid.ColumnHeaderMouseClick += delegate(object sender, DataGridViewCellMouseEventArgs e)
             {
@@ -214,10 +217,6 @@ namespace HansLaserDateSerialDemo
                 Padding = new Padding(0, 6, 12, 0)
             };
             editorRoot.Controls.Add(productButtons, 0, 1);
-
-            Button deleteProductButton = new Button { Width = 90, Height = 30, Text = "删除" };
-            deleteProductButton.Click += delegate { DeleteSelectedProduct(); };
-            productButtons.Controls.Add(deleteProductButton);
 
             Button saveProductButton = new Button { Width = 90, Height = 30, Text = "保存" };
             saveProductButton.Click += delegate { SaveProduct(); };
@@ -430,14 +429,20 @@ namespace HansLaserDateSerialDemo
                 _products = productService.GetProducts();
             }
 
+            RefreshProductComboBox(selectedProductId);
+            RefreshProductsGrid();
+        }
+
+        private void RefreshProductComboBox(int selectedProductId)
+        {
             _productComboBox.BeginUpdate();
             _productComboBox.Items.Clear();
             foreach (Product product in _products)
-                _productComboBox.Items.Add(new Selection<Product>(BuildProductLabel(product), product));
+            {
+                if (product.Id > 0)
+                    _productComboBox.Items.Add(new Selection<Product>(BuildProductLabel(product), product));
+            }
             _productComboBox.EndUpdate();
-
-            RefreshProductsGrid();
-
             SelectProduct(selectedProductId);
         }
 
@@ -454,12 +459,54 @@ namespace HansLaserDateSerialDemo
             RefreshProductsGrid();
 
             int rowIndex = _products.Count - 1;
+            BeginInvoke(new Action(delegate { FocusProductRow(rowIndex); }));
+        }
+
+        private void FocusProductRow(int rowIndex)
+        {
             if (rowIndex >= 0 && rowIndex < _productsGrid.Rows.Count)
             {
                 _productsGrid.ClearSelection();
+                _productsGrid.CurrentCell = _productsGrid.Rows[rowIndex].Cells[2];
                 _productsGrid.Rows[rowIndex].Selected = true;
-                _productsGrid.CurrentCell = _productsGrid.Rows[rowIndex].Cells[1];
+                _productsGrid.Focus();
+                LoadSelectedProductForEdit();
             }
+        }
+
+        private void DeleteProductAtRow(int rowIndex)
+        {
+            if (rowIndex < 0 || rowIndex >= _productsGrid.Rows.Count)
+                return;
+
+            Product product = _productsGrid.Rows[rowIndex].DataBoundItem as Product;
+            if (product == null)
+                return;
+
+            if (product.Id > 0)
+            {
+                DialogResult result = MessageBox.Show(
+                    $"确认删除产品 {product.Name}？",
+                    "产品配置",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning,
+                    MessageBoxDefaultButton.Button2);
+                if (result != DialogResult.Yes)
+                    return;
+
+                using (AppDbContext dbContext = new AppDbContext())
+                {
+                    ProductService productService = new ProductService(dbContext);
+                    productService.DeleteProduct(product.Id);
+                }
+            }
+
+            bool wasEditing = ReferenceEquals(_editingProduct, product);
+            _products.Remove(product);
+            RefreshProductComboBox(0);
+            RefreshProductsGrid();
+            if (wasEditing)
+                ClearProductEditor();
         }
 
         private static string BuildProductLabel(Product product)
@@ -562,31 +609,6 @@ namespace HansLaserDateSerialDemo
             {
                 MessageBox.Show($"产品保存失败：{ex.Message}", "产品配置", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-        }
-
-        private void DeleteSelectedProduct()
-        {
-            if (_editingProduct == null || _editingProduct.Id == 0)
-                return;
-
-            DialogResult result = MessageBox.Show(
-                $"确认删除产品 {_editingProduct.Name}？",
-                "产品配置",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button2);
-            if (result != DialogResult.Yes)
-                return;
-
-            int deletedId = _editingProduct.Id;
-            using (AppDbContext dbContext = new AppDbContext())
-            {
-                ProductService productService = new ProductService(dbContext);
-                productService.DeleteProduct(deletedId);
-            }
-
-            ClearProductEditor();
-            LoadProducts(0);
         }
 
         private static void ValidateProduct(Product product)
