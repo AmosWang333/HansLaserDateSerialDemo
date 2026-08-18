@@ -29,11 +29,11 @@
 
 ## 2. 修改现场配置
 
-启动程序后点击工具栏中的“设置”按钮，在设置弹窗中按字段修改配置，点击“保存并应用”后会写入程序目录下的 `config.json`，并重新初始化设备、加载模板：
+启动程序后点击工具栏中的“设置”按钮，在设置弹窗中按字段修改配置，点击“保存并应用”后会写入程序目录下的 `config.json`
+，并重新初始化设备、加载模板：
 
 ```json
 {
-  "DllPath": "C:\\HansLaser\\Marking\\HansAdvInterface.dll",
   "MachinePath": "C:\\HansLaser\\Marking",
   "TemplatePath": "C:\\HansMark\\Templates\\DateSerial.HS",
   "VariableTextAlias": "CODE",
@@ -68,8 +68,34 @@
 
 ## 5. 脚踏触发
 
-在设置弹窗的“脚踏触发”区域修改 `UseFootPedal` 和 `FootPedalTimeoutMs`，然后点击“保存并应用”。`FootPedalTimeoutMs` 在界面中按秒输入，保存到 `config.json` 时会转换为毫秒。按 `M 激光打标` 后，`HS_Mark` 会按该配置决定是否等待脚踏/触发信号，超时值由 `FootPedalTimeoutMs` 控制。
+在设置弹窗的“脚踏触发”区域修改 `UseFootPedal` 和 `FootPedalTimeoutMs`，然后点击“保存并应用”。`FootPedalTimeoutMs`
+在界面中按秒输入，保存到 `config.json` 时会转换为毫秒。按 `M 激光打标` 后，`HS_Mark` 会按该配置决定是否等待脚踏/触发信号，超时值由
+`FootPedalTimeoutMs` 控制。
 
 ## 6. 生产安全
 
 首次测试只使用红光预览，确认文本、位置、尺寸和方向正确后，再在废料上低风险试打。必须保留防护罩、门禁、急停和现场既有激光安全联锁；不要用软件逻辑替代硬件安全回路。
+
+## 7. 产品配置（Pending）
+
+产品字段如下表所示：
+
+| field              | type   | description              | required                 |
+|--------------------|--------|--------------------------|--------------------------|
+| id                 | int    | primary key              | yes(managed by database) | 
+| name               | string | 产品名称                 | no(used for display)     |
+| customerPartNumber | string | 客户件号                 | no(used for display)     |
+| shipcode           | int    | 发运代码                 | yes                      |
+| templatePath       | string | 模板文件地址             | yes                      |
+| pattern            | string | 用于生成编码的格式表达式 | yes                      |
+
+## 8. 打标历史（Pending）
+
+打标记录字段如下表所示：
+
+| field     | type     | description        | required                 |
+|-----------|----------|--------------------|--------------------------|
+| id        | int      | primary key        | yes(managed by database) |
+| code      | string   | 用于打标的明码内容 | yes                      |
+| timestamp | DateTime | 打标时间           | yes                      |
+| product   | Product  | 产品信息           | yes                      |

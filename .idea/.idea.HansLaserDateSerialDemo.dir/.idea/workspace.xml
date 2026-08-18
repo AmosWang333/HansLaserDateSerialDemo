@@ -14,7 +14,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb5b8294-9c8e-4fe8-a7d5-9609cb5d97a2" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/MarkingRecord.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Product.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.HansLaserDateSerialDemo.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.HansLaserDateSerialDemo.dir/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AppConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AppConfiguration.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainForm.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainForm.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SettingsDialog.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SettingsDialog.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,7 +32,7 @@
     <option name="firstShow" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="15" />
+    <option name="cachedIndexableFilesCount" value="18" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -38,13 +45,14 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;git@github.com:/smartstone97/HansLaserDateSerialDemo.git&quot;,
-    &quot;accountId&quot;: &quot;a1e4c97a-10d6-4b08-95c5-a801adeac812&quot;
+    &quot;url&quot;: &quot;git@github.com:smartstone97/HansLaserDateSerialDemo.git&quot;,
+    &quot;accountId&quot;: &quot;ac8c34fa-1760-4133-9f44-81f0ddc408b2&quot;
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$USER_HOME$/.jetbrains/acp.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/resource/00000000000000000000000000000000/04/ec08522f/16-1-2052-HansAdvInterface.txt" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/MarkingRecord.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Product.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="McpProjectServerCommands">
     <commands />
@@ -53,61 +61,61 @@
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0" />
-      <entry key="S10" value="1.0" />
-      <entry key="S30" value="1.0000000000006617" />
-      <entry key="S60" value="1.0000018473160786" />
-      <entry key="M2" value="1.00665015501446" />
-      <entry key="M5" value="2.3423050781194155" />
-      <entry key="M10" value="11.0676020914738" />
-      <entry key="M15" value="24.347231460786848" />
-      <entry key="M30" value="68.53163899839606" />
-      <entry key="H1" value="136.65637640573425" />
-      <entry key="H2" value="227.0152981484354" />
-      <entry key="H4" value="342.9680575983492" />
-      <entry key="D1" value="589.0854588052354" />
-      <entry key="W1" value="663.2098769176624" />
+      <entry key="MS100" value="1.0000000000000004" />
+      <entry key="MS500" value="1.0008143857849854" />
+      <entry key="S2" value="1.1689305739025604" />
+      <entry key="S5" value="1.49489556256631" />
+      <entry key="S10" value="1.830892859725211" />
+      <entry key="S30" value="4.385423780534447" />
+      <entry key="S60" value="9.546029385715814" />
+      <entry key="M2" value="18.99243986382415" />
+      <entry key="M5" value="35.85665197593903" />
+      <entry key="M10" value="50.13331773273674" />
+      <entry key="M15" value="61.95547599204401" />
+      <entry key="M30" value="95.80167580911892" />
+      <entry key="H1" value="161.26877491378536" />
+      <entry key="H2" value="273.81869450256806" />
+      <entry key="H4" value="429.69966331223776" />
+      <entry key="D1" value="782.912691150874" />
+      <entry key="W1" value="895.6994420477305" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="4.1527555210647704E-305" />
-      <entry key="S2" value="8.027569811337368E-77" />
-      <entry key="S5" value="3.6461424874760187E-31" />
-      <entry key="S10" value="6.038329642770439E-16" />
-      <entry key="S30" value="8.452248805795732E-6" />
-      <entry key="S60" value="0.002907275151373832" />
-      <entry key="M2" value="0.05391915495734884" />
-      <entry key="M5" value="0.3112881854968726" />
-      <entry key="M10" value="0.6111950001420084" />
-      <entry key="M15" value="1.0899118617979122" />
-      <entry key="M30" value="4.640088825604209" />
-      <entry key="H1" value="13.236750907641404" />
-      <entry key="H2" value="23.4786394904411" />
-      <entry key="H4" value="31.622602514378734" />
-      <entry key="D1" value="40.82014194178172" />
-      <entry key="W1" value="42.68065649488904" />
+      <entry key="MS500" value="1.968685647803312E-261" />
+      <entry key="S2" value="6.661071475387883E-66" />
+      <entry key="S5" value="8.500029539037757E-27" />
+      <entry key="S10" value="9.242930491598362E-14" />
+      <entry key="S30" value="5.152568757815095E-5" />
+      <entry key="S60" value="0.009637270378203949" />
+      <entry key="M2" value="0.1526305113216225" />
+      <entry key="M5" value="0.8815109534171811" />
+      <entry key="M10" value="1.6164601211346843" />
+      <entry key="M15" value="1.9885212323761101" />
+      <entry key="M30" value="2.690305157346192" />
+      <entry key="H1" value="5.638156429510222" />
+      <entry key="H2" value="14.007302733138145" />
+      <entry key="H4" value="25.166912069799555" />
+      <entry key="D1" value="42.95646202519974" />
+      <entry key="W1" value="47.24117555397701" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9526379980439373" />
-      <entry key="MS500" value="0.9903428719330246" />
-      <entry key="S2" value="0.9975769252644544" />
-      <entry key="S5" value="0.9990300646389034" />
-      <entry key="S10" value="0.9995149146655613" />
-      <entry key="S30" value="0.9998464372253794" />
-      <entry key="S60" value="1.002777290117639" />
-      <entry key="M2" value="1.060053971161714" />
-      <entry key="M5" value="2.6524640253677383" />
-      <entry key="M10" value="11.677569227360308" />
-      <entry key="M15" value="25.434949544466917" />
-      <entry key="M30" value="73.16327702441198" />
-      <entry key="H1" value="149.87880771588854" />
-      <entry key="H2" value="250.48048851199306" />
-      <entry key="H4" value="374.5813895843623" />
-      <entry key="D1" value="629.9035673400506" />
-      <entry key="W1" value="705.8902285397396" />
+      <entry key="MS100" value="0.9526379980439378" />
+      <entry key="MS500" value="0.99115051194127" />
+      <entry key="S2" value="1.1661565824157933" />
+      <entry key="S5" value="1.493512419090382" />
+      <entry key="S10" value="1.8300423975744995" />
+      <entry key="S30" value="4.384764424306502" />
+      <entry key="S60" value="9.554039543399867" />
+      <entry key="M2" value="19.137347152308337" />
+      <entry key="M5" value="36.72166121181103" />
+      <entry key="M10" value="51.73484707178146" />
+      <entry key="M15" value="63.931779990262" />
+      <entry key="M30" value="98.48389829764777" />
+      <entry key="H1" value="166.899368995817" />
+      <entry key="H2" value="287.81719771468516" />
+      <entry key="H4" value="454.8587808807733" />
+      <entry key="D1" value="825.8669383215205" />
+      <entry key="W1" value="942.9402692875794" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -122,30 +130,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET 项目.HansLaserDateSerialDemo.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "cidr.known.project.marker": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "http.proxy",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET 项目.HansLaserDateSerialDemo.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.ColorSchemeFont&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="HansLaserDateSerialDemo" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="" />
@@ -232,7 +240,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786435580794</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="update">
+      <option name="closed" value="true" />
+      <created>1786435903347</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1786435903347</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

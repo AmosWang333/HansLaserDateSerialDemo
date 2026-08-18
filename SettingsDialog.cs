@@ -7,7 +7,6 @@ namespace HansLaserDateSerialDemo
 {
     internal sealed class SettingsDialog : Form
     {
-        private readonly TextBox _dllPathTextBox;
         private readonly TextBox _machinePathTextBox;
         private readonly TextBox _templatePathTextBox;
         private readonly TextBox _variableTextAliasTextBox;
@@ -63,7 +62,7 @@ namespace HansLaserDateSerialDemo
             GroupBox basicBox = new GroupBox
             {
                 Width = 712,
-                Height = 280,
+                Height = 232,
                 Margin = new Padding(0, 0, 0, 10),
                 Text = "基础配置"
             };
@@ -73,36 +72,27 @@ namespace HansLaserDateSerialDemo
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 5,
+                RowCount = 4,
                 Padding = new Padding(12)
             };
             basicGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
             basicGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
                 basicGrid.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
             basicBox.Controls.Add(basicGrid);
 
-            _dllPathTextBox = AddPathSettingTextBox(
-                basicGrid,
-                0,
-                "接口 DLL",
-                delegate(TextBox textBox)
-                {
-                    BrowseFile(textBox, "选择接口 DLL",
-                        "HansAdvInterface.dll|HansAdvInterface.dll|DLL 文件 (*.dll)|*.dll|所有文件 (*.*)|*.*");
-                });
-            _dllVersionLabel = AddDllVersionRow(basicGrid, 1);
             _machinePathTextBox = AddPathSettingTextBox(
                 basicGrid,
-                2,
+                0,
                 "设备配置目录",
                 delegate(TextBox textBox) { BrowseFolder(textBox, "选择设备配置目录"); });
+            _dllVersionLabel = AddDllVersionRow(basicGrid, 1);
             _templatePathTextBox = AddPathSettingTextBox(
                 basicGrid,
-                3,
+                2,
                 "打标模板",
                 delegate(TextBox textBox) { BrowseFile(textBox, "选择打标模板", "打标模板 (*.HS)|*.HS|所有文件 (*.*)|*.*"); });
-            _variableTextAliasTextBox = AddSettingTextBox(basicGrid, 4, "可变文本别名");
+            _variableTextAliasTextBox = AddSettingTextBox(basicGrid, 3, "可变文本别名");
 
             GroupBox generatorBox = new GroupBox
             {
@@ -340,7 +330,6 @@ namespace HansLaserDateSerialDemo
 
         private void ShowConfiguration(AppConfiguration configuration)
         {
-            _dllPathTextBox.Text = configuration.DllPath;
             _machinePathTextBox.Text = configuration.MachinePath;
             _templatePathTextBox.Text = configuration.TemplatePath;
             _variableTextAliasTextBox.Text = configuration.VariableTextAlias;
@@ -355,25 +344,19 @@ namespace HansLaserDateSerialDemo
 
         private void ReadDllVersion()
         {
-            string dllPath = _dllPathTextBox.Text.Trim();
-            if (string.IsNullOrWhiteSpace(dllPath))
+            string machinePath = _machinePathTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(machinePath))
             {
-                _dllVersionLabel.Text = "请先填写接口 DLL 路径";
+                _dllVersionLabel.Text = "请先填写设备配置目录";
                 return;
             }
 
+            string dllPath = Path.Combine(machinePath, "HansAdvInterface.dll");
             try
             {
                 if (!File.Exists(dllPath))
                 {
-                    _dllVersionLabel.Text = "读取失败：找不到接口 DLL";
-                    return;
-                }
-
-                if (!string.Equals(Path.GetFileName(dllPath), "HansAdvInterface.dll",
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    _dllVersionLabel.Text = "读取失败：请选择 HansAdvInterface.dll";
+                    _dllVersionLabel.Text = "读取失败：MachinePath 下没有 HansAdvInterface.dll";
                     return;
                 }
 
@@ -456,7 +439,6 @@ namespace HansLaserDateSerialDemo
             {
                 AppConfiguration configuration = new AppConfiguration
                 {
-                    DllPath = _dllPathTextBox.Text.Trim(),
                     MachinePath = _machinePathTextBox.Text.Trim(),
                     TemplatePath = _templatePathTextBox.Text.Trim(),
                     VariableTextAlias = _variableTextAliasTextBox.Text.Trim(),

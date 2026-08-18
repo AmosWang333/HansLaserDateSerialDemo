@@ -445,7 +445,6 @@ namespace HansLaserDateSerialDemo
 
             AppConfiguration configuration = new AppConfiguration
             {
-                DllPath = @"C:\HansLaser\Marking\HansAdvInterface.dll",
                 MachinePath = @"C:\HansLaser\Marking",
                 TemplatePath = @"C:\HansMark\Templates\DateSerial.HS",
                 VariableTextAlias = "CODE",

@@ -14,28 +14,30 @@ namespace HansLaserDateSerialDemo
         public const string DefaultCodeGeneratorType = CodeGeneratorTypes.EcoFlow;
         public const string DefaultCodePattern = "";
 
-        [DataMember(IsRequired = true, Order = 1)]
-        public string DllPath { get; set; }
+        public string DllPath
+        {
+            get { return Path.Combine(MachinePath ?? string.Empty, "HansAdvInterface.dll"); }
+        }
 
-        [DataMember(IsRequired = true, Order = 2)]
+        [DataMember(IsRequired = true, Order = 1)]
         public string MachinePath { get; set; }
 
-        [DataMember(IsRequired = true, Order = 3)]
+        [DataMember(IsRequired = true, Order = 2)]
         public string TemplatePath { get; set; }
 
-        [DataMember(IsRequired = true, Order = 4)]
+        [DataMember(IsRequired = true, Order = 3)]
         public string VariableTextAlias { get; set; }
 
-        [DataMember(IsRequired = false, Order = 5)]
+        [DataMember(IsRequired = false, Order = 4)]
         public bool UseFootPedal { get; set; }
 
-        [DataMember(IsRequired = false, Order = 6)]
+        [DataMember(IsRequired = false, Order = 5)]
         public int FootPedalTimeoutMs { get; set; }
 
-        [DataMember(IsRequired = false, Order = 7)]
+        [DataMember(IsRequired = false, Order = 6)]
         public string CodeGeneratorType { get; set; }
 
-        [DataMember(IsRequired = false, Order = 8)]
+        [DataMember(IsRequired = false, Order = 7)]
         public string CodePattern { get; set; }
 
         public static AppConfiguration Load(string fileName)
@@ -75,7 +77,6 @@ namespace HansLaserDateSerialDemo
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("{");
-            AppendJsonLine(builder, "DllPath", DllPath, true);
             AppendJsonLine(builder, "MachinePath", MachinePath, true);
             AppendJsonLine(builder, "TemplatePath", TemplatePath, true);
             AppendJsonLine(builder, "VariableTextAlias", VariableTextAlias, true);
@@ -89,15 +90,12 @@ namespace HansLaserDateSerialDemo
 
         public void ValidateFiles()
         {
-            if (!File.Exists(DllPath))
-                throw new FileNotFoundException("找不到接口 DLL，请修改 config.json 中的 DllPath。", DllPath);
-            if (!string.Equals(Path.GetFileName(DllPath), "HansAdvInterface.dll", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("DllPath 必须指向 HansAdvInterface.dll。CSharpInterface.cs 固定导入该 DLL 名称。");
-            if (!File.Exists(TemplatePath))
-                throw new FileNotFoundException("找不到打标模板，请修改 config.json 中的 TemplatePath。", TemplatePath);
-
             if (!string.IsNullOrWhiteSpace(MachinePath) && !Directory.Exists(MachinePath))
                 throw new DirectoryNotFoundException($"MachinePath 不存在：{MachinePath}");
+            if (!File.Exists(DllPath))
+                throw new FileNotFoundException("找不到接口 DLL，请确认 MachinePath 下存在 HansAdvInterface.dll。", DllPath);
+            if (!File.Exists(TemplatePath))
+                throw new FileNotFoundException("找不到打标模板，请修改 config.json 中的 TemplatePath。", TemplatePath);
         }
 
         private void ApplyDefaults()
@@ -112,8 +110,6 @@ namespace HansLaserDateSerialDemo
 
         private void ValidateRequired(string sourceName)
         {
-            if (string.IsNullOrWhiteSpace(DllPath))
-                throw new InvalidDataException($"{sourceName} 缺少 DllPath。");
             if (string.IsNullOrWhiteSpace(MachinePath))
                 throw new InvalidDataException($"{sourceName} 缺少 MachinePath。");
             if (string.IsNullOrWhiteSpace(TemplatePath))
