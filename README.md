@@ -1,101 +1,193 @@
-# 大族激光“日期码 + 四位流水号”二次开发示例
+# 大族激光日期流水号二开 Demo
 
-目标编码：`年码 + 月码 + 日码 + 0001~9999`。
+这是一个 Windows Forms 示例程序，用大族激光 `HansAdvInterface.dll`
+二次开发接口把日期流水号写入打标模板中的可变文本对象，并调用设备执行红光预览、激光打标、历史记录查询和历史编号重新打标。
 
-示例：2026-07-14 第 1 件 => `J7E0001`。
+当前默认编码生成器为 `EcoFlow`：`静态前缀 + 年码 + 月码 + 日码 + 4 位流水号`。例如 2026-07-14 第 1 件，在无静态前缀时生成
+`J7E0001`。
 
-## 适用接口
+## 主要功能
 
-按《二次开发接口》中的 `HansAdvInterface.dll` 示例，使用：
+- 读取大族激光设备目录中的 `HansAdvInterface.dll`，初始化设备并加载产品模板。
+- 按产品维护模板路径、客户料号、Shipcode、编码 Pattern 和每日起始流水号。
+- 支持 `EcoFlow` 和 `Normal` 两种编号生成器。
+- 打标前先占用编号，只有打标正常结束才提交为 `Marked`。
+- 红光预览不提交编号。
+- 异常断电、打标失败或退出时保留待确认编号，重启后继续提示处理。
+- 支持操作员确认编号已用或跳过，状态记录为 `Skipped`。
+- 支持按产品和状态查询历史打标记录，并对历史编号执行重新打标。
+- 使用 SQLite 保存产品、流水状态和打标记录。
+
+## 环境要求
+
+- Windows
+- .NET 10 SDK
+- 大族激光打标控制软件及对应的 `HansAdvInterface.dll`
+- 与厂家 DLL 位数一致的编译平台。项目当前配置为 `x86`，如果现场 DLL 明确为 64 位，需要把项目改为 `x64`。
+
+如果运行时出现 `BadImageFormatException`，通常表示程序平台目标与厂家 DLL 位数不一致。
+
+## 模板准备
+
+在大族激光标准打标软件中先准备模板：
+
+1. 完成 BOX 校正、位置校正、激光器参数和图层参数设置。
+2. 新建一个文本对象，并设置为可变文本或模型文本。
+3. 将可变文本别名设置为 `CODE`，或与 `config.json` 中的 `VariableTextAlias` 保持一致。
+4. 保存模板文件，例如 `C:\HansMark\Templates\DateSerial.HS`。
+5. 退出标准打标软件和校正软件，避免它们与本程序同时占用设备。
+
+路径建议只使用英文、数字和反斜杠，避免旧版 ANSI 接口无法识别中文路径。
+
+## 配置文件
+
+程序启动目录下的 `config.json` 会随程序读取和保存。当前示例配置如下：
+
+```json
+{
+  "MachinePath": "D:\\Han's Laser Marking Control SoftwareV1_1_3",
+  "TemplatePath": ".\\Templates\\DateSerial.HS",
+  "VariableTextAlias": "CODE",
+  "UseFootPedal": false,
+  "FootPedalTimeoutMs": 600000,
+  "CodeGeneratorType": "EcoFlow",
+  "CodePattern": ""
+}
+```
+
+字段说明：
+
+| 字段                 | 说明                                                              |
+|----------------------|-------------------------------------------------------------------|
+| `MachinePath`        | 大族激光打标控制软件目录，目录下必须存在 `HansAdvInterface.dll`。 |
+| `TemplatePath`       | 兼容旧配置的模板路径。当前运行时以所选产品的模板路径为准。        |
+| `VariableTextAlias`  | 模板中可变文本对象的别名，默认 `CODE`。                           |
+| `UseFootPedal`       | 是否启用脚踏或外部触发等待。                                      |
+| `FootPedalTimeoutMs` | 脚踏等待超时时间，单位毫秒。设置窗口中按秒输入。                  |
+| `CodeGeneratorType`  | 编号生成器，支持 `EcoFlow` 或 `Normal`。                          |
+| `ProductId`          | 当前选择的产品 ID，由设置窗口保存。                               |
+
+## 产品配置
+
+点击工具栏中的“设置...”打开设置窗口。在“产品配置”页维护产品，然后在“运行设置”页选择当前产品并点击“保存并应用”。
+
+产品字段：
+
+| 字段                 | 说明                                   | 必填 |
+|----------------------|----------------------------------------|------|
+| `Name`               | 产品名称，用于界面显示。               | 是   |
+| `CustomerPartNumber` | 客户料号，用于界面显示和查询。         | 否   |
+| `Shipcode`           | 发运代码。                             | 是   |
+| `SerialStartValue`   | 每天的起始流水号，范围 `1` 到 `9999`。 | 是   |
+| `TemplatePath`       | 该产品使用的打标模板路径。             | 是   |
+| `Pattern`            | 编号生成器使用的 Pattern。             | 是   |
+
+### EcoFlow 生成器
+
+`EcoFlow` 生成格式为：
+
+```text
+Pattern + 年码 + 月码 + 日码 + 流水号
+```
+
+- 年码当前支持 2025 到 2035。
+- 月码和日码使用 `1..9, A..H, J..N, P..X`，跳过 `I` 和 `O`。
+- 流水号范围为 `0001` 到 `9999`。
+- 产品 `Pattern` 会作为静态前缀拼接在编码最前面。
+
+### Normal 生成器
+
+`Normal` 使用产品 `Pattern` 作为 .NET 日期格式字符串，再通过 `string.Format(..., serial)` 填入流水号。
+
+示例：
+
+```text
+yyyyMMdd-{0:0000}
+```
+
+在 2026-07-14 第 1 件时生成：
+
+```text
+20260714-0001
+```
+
+## 运行流程
+
+1. 启动程序。
+2. 点击工具栏“设置...”，填写设备目录、可变文本别名、编号生成器、脚踏配置和产品配置。
+3. 选择产品并点击“保存并应用”，程序会保存 `config.json`、初始化设备并加载该产品模板。
+4. 主界面显示当前待处理编号、日期和流水号。
+5. 根据现场流程点击：
+
+| 操作          | 说明                                                           |
+|---------------|----------------------------------------------------------------|
+| `P 红光预览`  | 执行红光预览，不提交流水号。                                   |
+| `M 激光打标`  | 执行激光打标。只有 `HS_IsMarkEnd` 返回正常结束时才提交流水号。 |
+| `S 已用/跳过` | 操作员确认当前编号已经使用或必须跳过，随后进入下一个编号。     |
+| `Q 退出`      | 退出程序，当前待确认编号保留，下次启动后继续提示。             |
+
+程序会先把编号写入数据库作为 `Pending` 记录，再调用激光接口。这样即使中途断电，也不会静默地把同一个编号分配给下一件工件。恢复后需要人工检查工件或
+MES，再决定重新打标还是确认已用或跳过。
+
+## 历史记录和重新打标
+
+点击工具栏“历史记录”可以按产品和状态查询记录。记录状态包括：
+
+| 状态        | 含义                         |
+|-------------|------------------------------|
+| `Pending`   | 已占用但未确认完成。         |
+| `Marked`    | 激光打标正常完成。           |
+| `Skipped`   | 操作员确认已用或跳过。       |
+| `Reprinted` | 历史编号重新打标生成的记录。 |
+
+历史编号重新打标不会占用新的日流水号。重新打标正常结束后，会新增一条 `Reprinted` 记录，并通过 `SourceRecordId` 关联原始记录。
+
+## 数据文件
+
+程序运行目录下会产生以下文件：
+
+| 文件             | 说明                                             |
+|------------------|--------------------------------------------------|
+| `config.json`    | 运行配置。                                       |
+| `data.db`        | SQLite 数据库，保存产品、流水状态和历史记录。    |
+| `mark-audit.csv` | 简要审计日志，记录预览、打标、异常和重打标事件。 |
+
+## 使用的厂家接口
+
+程序封装使用了以下主要接口：
 
 - `HS_InitialMachine`
 - `HS_LoadMarkFile`
-- `HS_ChangeTextByNameW`（缺失时回退 `HS_ChangeTextByName`）
+- `HS_ChangeTextByNameW`
+- `HS_ChangeTextByName`
 - `HS_Mark`
 - `HS_IsMarkEnd`
 - `HS_MarkStop`
 - `HS_GetMarkTime`
+- `HS_CloseMarkFile`
 - `HS_CloseMachine`
 
-## 1. 先做模板
+优先使用 `HS_ChangeTextByNameW` 写入可变文本；如果旧版 DLL 没有该入口，会回退到 `HS_ChangeTextByName`。当前流水号内容建议保持
+ASCII，以保证回退接口也能可靠工作。
 
-在标准打标软件中：
+## 常见问题
 
-1. 完成 BOX 校正、位置校正、激光器参数和层参数设置。
-2. 新建一个文本对象，并设置为“可变文本/模型文本”。
-3. 把可变文本别名设置为 `CODE`。
-4. 保存为 `C:\HansMark\Templates\DateSerial.HS`。
-5. 退出标准打标软件和校正软件；接口程序不能与其同时占用设备。
+### 提示另一个程序在运行
 
-## 2. 修改现场配置
+错误码 `1` 通常表示标准打标软件或校正软件仍在占用设备。请关闭相关软件后重新启动本程序。
 
-启动程序后点击工具栏中的“设置”按钮，在设置弹窗中按字段修改配置，点击“保存并应用”后会写入程序目录下的 `config.json`
-，并重新初始化设备、加载模板：
+### 找不到 `HansAdvInterface.dll`
 
-```json
-{
-  "MachinePath": "C:\\HansLaser\\Marking",
-  "TemplatePath": "C:\\HansMark\\Templates\\DateSerial.HS",
-  "VariableTextAlias": "CODE",
-  "UseFootPedal": false,
-  "FootPedalTimeoutMs": 600000
-}
-```
+检查 `MachinePath` 是否指向大族激光打标控制软件目录，并确认该目录下存在 `HansAdvInterface.dll`。
 
-路径尽量只使用英文、数字和反斜杠，避免旧版 ANSI 接口无法识别中文路径。
+### 找不到可变文本别名
 
-## 3. 编译
+检查模板中的可变文本对象别名是否与 `VariableTextAlias` 一致。默认别名为 `CODE`。
 
-推荐 Visual Studio：
+### 当天流水号达到 9999
 
-1. 打开 `HansLaserDateSerialDemo.csproj`。
-2. 安装/启用 .NET Framework 4.8 Targeting Pack。
-3. 配置使用 `x86` 编译。若现场 DLL 明确为 64 位，再改为 x64。
-4. 生成并运行。
+程序会禁止回卷到起始值，避免重复编号。需要现场按生产规则切换日期、产品或人工处理。
 
-出现 `BadImageFormatException` 通常代表程序与原生 DLL 位数不一致。
+## 生产安全
 
-## 4. 运行逻辑
-
-程序启动后先通过工具栏“设置”打开弹窗并点击“保存并应用”。应用成功后，界面会显示当前编号和操作流程：
-
-- `P 红光预览`：红光预览，不提交流水号。
-- `M 激光打标`：激光打标。只有 `HS_IsMarkEnd` 返回 1（正常结束）才提交。
-- `S 已用/跳过`：操作员确认该编号已打或应跳过，然后进入下一个编号。
-- `Q 退出`：退出；当前待确认编号保留，下次启动继续提示。
-
-程序先把编号写入 `sequence.state` 作为“待确认编号”，再调用激光。这样突然断电后不会静默地把该编号重新分配给下一件。断电恢复后仍需检查工件/MES，人工决定重打还是确认已用/跳过。
-
-## 5. 脚踏触发
-
-在设置弹窗的“脚踏触发”区域修改 `UseFootPedal` 和 `FootPedalTimeoutMs`，然后点击“保存并应用”。`FootPedalTimeoutMs`
-在界面中按秒输入，保存到 `config.json` 时会转换为毫秒。按 `M 激光打标` 后，`HS_Mark` 会按该配置决定是否等待脚踏/触发信号，超时值由
-`FootPedalTimeoutMs` 控制。
-
-## 6. 生产安全
-
-首次测试只使用红光预览，确认文本、位置、尺寸和方向正确后，再在废料上低风险试打。必须保留防护罩、门禁、急停和现场既有激光安全联锁；不要用软件逻辑替代硬件安全回路。
-
-## 7. 产品配置（Pending）
-
-产品（Product）字段如下表所示：
-
-| field              | type   | description              | required                 |
-|--------------------|--------|--------------------------|--------------------------|
-| id                 | int    | primary key              | yes(managed by database) | 
-| name               | string | 产品名称                 | no(used for display)     |
-| customerPartNumber | string | 客户件号                 | no(used for display)     |
-| shipcode           | int    | 发运代码                 | yes                      |
-| templatePath       | string | 模板文件地址             | yes                      |
-| pattern            | string | 用于生成编码的格式表达式 | yes                      |
-
-## 8. 打标历史（Pending）
-
-打标记录（MarkingRecord）字段如下表所示：
-
-| field     | type     | description        | required                 |
-|-----------|----------|--------------------|--------------------------|
-| id        | int      | primary key        | yes(managed by database) |
-| code      | string   | 用于打标的明码内容 | yes                      |
-| timestamp | DateTime | 打标时间           | yes                      |
-| product   | Product  | 产品信息           | yes                      |
+首次测试只使用红光预览，确认文本、位置、尺寸和方向正确后，再在废料或低风险工件上试打。必须保留防护罩、门禁、急停和现场既有激光安全联锁。不要用软件逻辑替代硬件安全回路。
