@@ -204,7 +204,7 @@ namespace HansLaserDateSerialDemo
                 ColumnCount = 1,
                 RowCount = 2
             };
-            editorRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 318));
+            editorRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             editorRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
             editorBox.Controls.Add(editorRoot);
 
