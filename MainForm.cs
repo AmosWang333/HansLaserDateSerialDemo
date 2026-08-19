@@ -34,7 +34,7 @@ namespace HansLaserDateSerialDemo
 
         public MainForm()
         {
-            Text = "大族激光二开Demo";
+            Text = "激光打标应用";
             StartPosition = FormStartPosition.CenterScreen;
             MinimumSize = new Size(980, 680);
             Size = new Size(1080, 720);
@@ -202,7 +202,7 @@ namespace HansLaserDateSerialDemo
                 flow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
             flowBox.Controls.Add(flow);
             AddFlowStep(flow, 0, "1", "应用配置", "工具栏设置保存 config.json，初始化设备并加载模板。");
-            AddFlowStep(flow, 1, "2", "占用编号", "写入 sequence.state，断电后仍回到同一待确认编号。");
+            AddFlowStep(flow, 1, "2", "占用编号", "状态写入数据库，断电后可恢复。");
             AddFlowStep(flow, 2, "3", "预览/打标", "P 红光预览不提交；M 正常结束才提交。");
             AddFlowStep(flow, 3, "4", "确认异常", "S 确认已用或跳过；Q 退出保留待确认编号。");
 
