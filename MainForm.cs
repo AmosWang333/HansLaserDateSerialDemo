@@ -9,11 +9,11 @@ namespace HansLaserDateSerialDemo
     internal sealed class MainForm : Form
     {
         private const string ConfigFile = "config.json";
-        private const string StateFile = @".\sequence.state";
         private const string AuditFile = @".\mark-audit.csv";
 
         private readonly ToolStripButton _settingsButton;
         private readonly ToolStripButton _startButton;
+        private readonly ToolStripButton _historyButton;
         private readonly Label _status;
         private Label _codeValue;
         private Label _dateValue;
@@ -26,6 +26,7 @@ namespace HansLaserDateSerialDemo
         private Button _exitButton;
 
         private AppConfiguration _configuration;
+        private Product _product;
         private SequenceStore _store;
         private HansApi _api;
         private Reservation _reservation;
@@ -92,6 +93,20 @@ namespace HansLaserDateSerialDemo
             };
             _startButton.Click += async delegate { await StartWithSavedConfigurationAsync(); };
             toolStrip.Items.Add(_startButton);
+
+            _historyButton = new ToolStripButton("历史记录")
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Text,
+                AutoSize = false,
+                Width = 96,
+                Height = 32,
+                Margin = new Padding(0, 0, 8, 0),
+                Padding = new Padding(12, 0, 12, 0),
+                Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
+                ToolTipText = "查看历史打标记录"
+            };
+            _historyButton.Click += delegate { OpenHistory(); };
+            toolStrip.Items.Add(_historyButton);
 
             shell.Controls.Add(toolStrip, 0, 0);
 
@@ -412,8 +427,9 @@ namespace HansLaserDateSerialDemo
                         DisposeApi();
                         _api = newApi;
                         _configuration = configuration;
+                        _product = product;
                         _store = new SequenceStore(
-                            StateFile,
+                            product,
                             CodeGeneratorFactory.Create(configuration.CodeGeneratorType, product.Pattern));
                         Log((saveConfiguration ? "配置已保存并应用：" : "已按保存配置启动：") + version);
                         ReserveAndDisplayCurrent();
@@ -431,6 +447,7 @@ namespace HansLaserDateSerialDemo
         private void ClearCurrentReservation(string message)
         {
             _store = null;
+            _product = null;
             _reservation = null;
             _codeValue.Text = "--";
             _dateValue.Text = "--";
@@ -586,6 +603,112 @@ namespace HansLaserDateSerialDemo
             ReserveAndDisplayCurrent();
         }
 
+        private void OpenHistory()
+        {
+            using (MarkingRecordHistoryForm dialog = new MarkingRecordHistoryForm(
+                       _configuration == null ? 0 : _configuration.ProductId,
+                       ReprintRecordAsync))
+            {
+                dialog.ShowDialog(this);
+            }
+        }
+
+        private async Task ReprintRecordAsync(MarkingRecord source)
+        {
+            if (source == null)
+                return;
+
+            if (_api == null || _configuration == null || _product == null)
+            {
+                MessageBox.Show("请先启动产品配置和模板，再执行重新打标。", "历史重打标", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (source.ProductId != _product.Id)
+            {
+                MessageBox.Show("请先启动该历史记录所属产品的配置和模板，再执行重新打标。", "历史重打标", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DialogResult result = MessageBox.Show(
+                $"确认重新打标历史编号 {source.Code}？",
+                "历史重打标",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning,
+                MessageBoxDefaultButton.Button2);
+            if (result != DialogResult.Yes)
+                return;
+
+            await RunBusyAsync("正在重新打标历史编号...", delegate
+            {
+                try
+                {
+                    _api.SetVariableText(_configuration.VariableTextAlias, source.Code);
+                    int overallTimeoutMs = _configuration.UseFootPedal
+                        ? _configuration.FootPedalTimeoutMs + 60 * 1000
+                        : 2 * 60 * 1000;
+
+                    MarkEndStatus status = _api.MarkAndWait(
+                        false,
+                        _configuration.UseFootPedal,
+                        _configuration.UseFootPedal ? _configuration.FootPedalTimeoutMs : 0,
+                        overallTimeoutMs);
+
+                    uint? markTime = _api.TryGetLastMarkTimeMs();
+                    string detail = status + (markTime.HasValue ? $"; {markTime.Value} ms" : string.Empty);
+
+                    if (status == MarkEndStatus.Normal)
+                    {
+                        DateTime now = DateTime.Now;
+                        using (AppDbContext dbContext = new AppDbContext())
+                        {
+                            dbContext.EnsureDatabase();
+                            dbContext.MarkingRecords.Add(new MarkingRecord
+                            {
+                                ProductId = source.ProductId,
+                                Code = source.Code,
+                                Serial = source.Serial,
+                                BusinessDate = source.BusinessDate.Date,
+                                State = MarkingRecordStates.Reprinted,
+                                CreatedAt = now,
+                                MarkedAt = now,
+                                UpdatedAt = now,
+                                SourceRecordId = source.Id,
+                                Remark = "历史编号重新打标"
+                            });
+                            dbContext.SaveChanges();
+                        }
+
+                        AuditLog.Append(AuditFile, "REPRINT_SUCCESS", source.Code, detail);
+                        BeginInvoke(new Action(delegate { Log($"历史编号已重新打标：{source.Code}"); }));
+                    }
+                    else
+                    {
+                        AuditLog.Append(AuditFile, "REPRINT_NOT_NORMAL", source.Code, detail);
+                        BeginInvoke(new Action(delegate
+                        {
+                            Log($"历史编号重新打标未正常完成：{status}");
+                            SetStatus("历史编号重新打标未正常完成", true);
+                        }));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AuditLog.Append(AuditFile, "REPRINT_ERROR", source.Code, ex.Message);
+                    BeginInvoke(new Action(delegate
+                    {
+                        Log($"历史编号重新打标异常：{ex.Message}");
+                        SetStatus("历史编号重新打标异常", true);
+                    }));
+                }
+                finally
+                {
+                    if (_reservation != null)
+                        _api.SetVariableText(_configuration.VariableTextAlias, _reservation.Code);
+                }
+            });
+        }
+
         private void ReserveAndDisplayCurrent()
         {
             try
@@ -644,6 +767,7 @@ namespace HansLaserDateSerialDemo
             bool ready = !_busy && _api != null && _reservation != null;
             _settingsButton.Enabled = !_busy;
             _startButton.Enabled = !_busy;
+            _historyButton.Enabled = !_busy;
             _previewButton.Enabled = ready;
             _markButton.Enabled = ready;
             _skipButton.Enabled = ready;

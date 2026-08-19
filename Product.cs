@@ -10,5 +10,6 @@ namespace HansLaserDateSerialDemo
         public int Shipcode { get; set; }
         public string TemplatePath { get; set; }
         public string Pattern { get; set; }
+        public int SerialStartValue { get; set; } = 1;
     }
 }

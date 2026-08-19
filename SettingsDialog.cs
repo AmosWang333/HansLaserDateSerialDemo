@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace HansLaserDateSerialDemo
@@ -19,11 +21,15 @@ namespace HansLaserDateSerialDemo
         private readonly TextBox _productNameTextBox;
         private readonly TextBox _customerPartNumberTextBox;
         private readonly NumericUpDown _shipcodeBox;
+        private readonly NumericUpDown _serialStartValueBox;
         private readonly TextBox _productTemplatePathTextBox;
         private readonly TextBox _productPatternTextBox;
 
         private List<Product> _products = new List<Product>();
         private Product _editingProduct;
+        private bool _refreshingProductsGrid;
+        private readonly SvgPathIcon _addIcon = new SvgPathIcon("M5 12h14m-7 7V5");
+        private readonly SvgPathIcon _deleteIcon = new SvgPathIcon("m5 6l.876 13.133A2 2 0 0 0 7.87 21h8.258a2 2 0 0 0 1.995-1.867L19 6M8 6l.772-2.316A1 1 0 0 1 9.721 3h4.558a1 1 0 0 1 .949.684L16 6m-6 5v5m4-5v5M4 6h16");
 
         public AppConfiguration Configuration { get; private set; }
 
@@ -155,11 +161,12 @@ namespace HansLaserDateSerialDemo
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowHeadersVisible = false
             };
-            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "新增", Text = "+", UseColumnTextForButtonValue = true, Width = 36 });
-            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "删除", Text = "X", UseColumnTextForButtonValue = true, Width = 36 });
+            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "新增", UseColumnTextForButtonValue = false, Width = 36 });
+            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "删除", UseColumnTextForButtonValue = false, Width = 36 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "名称", DataPropertyName = "Name", Width = 150 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 150 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 90 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "起始流水", DataPropertyName = "SerialStartValue", Width = 90 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "模板", DataPropertyName = "TemplatePath", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 150 });
             _productsGrid.CellContentClick += delegate(object sender, DataGridViewCellEventArgs e)
@@ -167,14 +174,23 @@ namespace HansLaserDateSerialDemo
                 if (e.RowIndex >= 0 && e.ColumnIndex == 0)
                     AddProductRow();
                 else if (e.RowIndex >= 0 && e.ColumnIndex == 1)
-                    DeleteProductAtRow(e.RowIndex);
+                    BeginInvoke(new Action(delegate { DeleteProductAtRow(e.RowIndex); }));
             };
             _productsGrid.ColumnHeaderMouseClick += delegate(object sender, DataGridViewCellMouseEventArgs e)
             {
                 if (e.ColumnIndex == 0)
                     AddProductRow();
             };
-            _productsGrid.SelectionChanged += delegate { LoadSelectedProductForEdit(); };
+            _productsGrid.CellPainting += PaintProductActionIcon;
+            _productsGrid.DataError += delegate(object sender, DataGridViewDataErrorEventArgs e)
+            {
+                e.ThrowException = false;
+            };
+            _productsGrid.SelectionChanged += delegate
+            {
+                if (!_refreshingProductsGrid)
+                    LoadSelectedProductForEdit();
+            };
             productsRoot.Controls.Add(_productsGrid, 0, 0);
 
             GroupBox editorBox = new GroupBox
@@ -195,19 +211,22 @@ namespace HansLaserDateSerialDemo
             editorRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
             editorBox.Controls.Add(editorRoot);
 
-            TableLayoutPanel editorGrid = CreateFormGrid(5);
+            TableLayoutPanel editorGrid = CreateFormGrid(6);
             editorGrid.ColumnStyles[0].Width = 110;
             editorRoot.Controls.Add(editorGrid, 0, 0);
 
             _productNameTextBox = AddSettingTextBox(editorGrid, 0, "名称");
             _customerPartNumberTextBox = AddSettingTextBox(editorGrid, 1, "客户料号");
             _shipcodeBox = AddNumericSetting(editorGrid, 2, "Shipcode");
+            _serialStartValueBox = AddNumericSetting(editorGrid, 3, "起始流水");
+            _serialStartValueBox.Minimum = 1;
+            _serialStartValueBox.Maximum = 9999;
             _productTemplatePathTextBox = AddPathSettingTextBox(
                 editorGrid,
-                3,
+                4,
                 "打标模板",
                 delegate(TextBox textBox) { BrowseFile(textBox, "选择打标模板", "打标模板 (*.HS)|*.HS|所有文件 (*.*)|*.*"); });
-            _productPatternTextBox = AddSettingTextBox(editorGrid, 4, "Pattern");
+            _productPatternTextBox = AddSettingTextBox(editorGrid, 5, "Pattern");
 
             FlowLayoutPanel productButtons = new FlowLayoutPanel
             {
@@ -448,8 +467,39 @@ namespace HansLaserDateSerialDemo
 
         private void RefreshProductsGrid()
         {
-            _productsGrid.DataSource = null;
-            _productsGrid.DataSource = _products;
+            _refreshingProductsGrid = true;
+            try
+            {
+                _productsGrid.DataSource = null;
+                _productsGrid.DataSource = _products;
+                if (_products.Count == 0)
+                    _productsGrid.ClearSelection();
+            }
+            finally
+            {
+                _refreshingProductsGrid = false;
+            }
+        }
+
+        private void PaintProductActionIcon(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex < 0 || (e.ColumnIndex != 0 && e.ColumnIndex != 1))
+                return;
+
+            e.Paint(e.CellBounds, DataGridViewPaintParts.Background | DataGridViewPaintParts.Border);
+
+            Rectangle iconBounds = new Rectangle(
+                e.CellBounds.Left + (e.CellBounds.Width - 20) / 2,
+                e.CellBounds.Top + (e.CellBounds.Height - 20) / 2,
+                20,
+                20);
+
+            Color color = e.ColumnIndex == 0
+                ? Color.FromArgb(35, 120, 70)
+                : Color.FromArgb(180, 60, 55);
+            SvgPathIcon icon = e.ColumnIndex == 0 ? _addIcon : _deleteIcon;
+            icon.Draw(e.Graphics, iconBounds, color);
+            e.Handled = true;
         }
 
         private void AddProductRow()
@@ -476,12 +526,18 @@ namespace HansLaserDateSerialDemo
 
         private void DeleteProductAtRow(int rowIndex)
         {
-            if (rowIndex < 0 || rowIndex >= _productsGrid.Rows.Count)
+            if (rowIndex < 0 || rowIndex >= _products.Count)
                 return;
 
-            Product product = _productsGrid.Rows[rowIndex].DataBoundItem as Product;
+            Product product = _products[rowIndex];
             if (product == null)
                 return;
+
+            if (product.Id <= 0)
+            {
+                RemoveProductFromGrid(product, 0);
+                return;
+            }
 
             if (product.Id > 0)
             {
@@ -501,9 +557,14 @@ namespace HansLaserDateSerialDemo
                 }
             }
 
+            RemoveProductFromGrid(product, 0);
+        }
+
+        private void RemoveProductFromGrid(Product product, int selectedProductId)
+        {
             bool wasEditing = ReferenceEquals(_editingProduct, product);
             _products.Remove(product);
-            RefreshProductComboBox(0);
+            RefreshProductComboBox(selectedProductId);
             RefreshProductsGrid();
             if (wasEditing)
                 ClearProductEditor();
@@ -556,14 +617,19 @@ namespace HansLaserDateSerialDemo
 
         private void LoadSelectedProductForEdit()
         {
-            if (_productsGrid.CurrentRow == null || _productsGrid.CurrentRow.DataBoundItem == null)
+            if (_refreshingProductsGrid || _productsGrid.CurrentRow == null)
                 return;
 
-            _editingProduct = (Product)_productsGrid.CurrentRow.DataBoundItem;
+            int rowIndex = _productsGrid.CurrentRow.Index;
+            if (rowIndex < 0 || rowIndex >= _products.Count)
+                return;
+
+            _editingProduct = _products[rowIndex];
 
             _productNameTextBox.Text = _editingProduct.Name;
             _customerPartNumberTextBox.Text = _editingProduct.CustomerPartNumber;
             _shipcodeBox.Value = Math.Max(_shipcodeBox.Minimum, Math.Min(_shipcodeBox.Maximum, _editingProduct.Shipcode));
+            _serialStartValueBox.Value = Math.Max(_serialStartValueBox.Minimum, Math.Min(_serialStartValueBox.Maximum, _editingProduct.SerialStartValue <= 0 ? 1 : _editingProduct.SerialStartValue));
             _productTemplatePathTextBox.Text = _editingProduct.TemplatePath;
             _productPatternTextBox.Text = _editingProduct.Pattern;
         }
@@ -574,6 +640,7 @@ namespace HansLaserDateSerialDemo
             _productNameTextBox.Clear();
             _customerPartNumberTextBox.Clear();
             _shipcodeBox.Value = 0;
+            _serialStartValueBox.Value = 1;
             _productTemplatePathTextBox.Clear();
             _productPatternTextBox.Clear();
             _productsGrid.ClearSelection();
@@ -587,6 +654,7 @@ namespace HansLaserDateSerialDemo
                 product.Name = _productNameTextBox.Text.Trim();
                 product.CustomerPartNumber = _customerPartNumberTextBox.Text.Trim();
                 product.Shipcode = Convert.ToInt32(_shipcodeBox.Value);
+                product.SerialStartValue = Convert.ToInt32(_serialStartValueBox.Value);
                 product.TemplatePath = _productTemplatePathTextBox.Text.Trim();
                 product.Pattern = _productPatternTextBox.Text.Trim();
 
@@ -619,6 +687,8 @@ namespace HansLaserDateSerialDemo
                 throw new InvalidDataException("打标模板不能为空。");
             if (string.IsNullOrWhiteSpace(product.Pattern))
                 throw new InvalidDataException("Pattern 不能为空。");
+            if (product.SerialStartValue < 1 || product.SerialStartValue > 9999)
+                throw new InvalidDataException("起始流水必须在 1-9999 之间。");
         }
 
         private void ReadDllVersion()
@@ -738,6 +808,144 @@ namespace HansLaserDateSerialDemo
             catch (Exception ex)
             {
                 MessageBox.Show($"设置无效：{ex.Message}", "设置", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private sealed class SvgPathIcon
+        {
+            private static readonly Regex TokenRegex =
+                new Regex(@"[A-Za-z]|[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?", RegexOptions.Compiled);
+
+            private readonly string _pathData;
+
+            public SvgPathIcon(string pathData)
+            {
+                _pathData = pathData;
+            }
+
+            public void Draw(Graphics graphics, Rectangle bounds, Color color)
+            {
+                using (GraphicsPath path = BuildPath())
+                using (Matrix matrix = new Matrix())
+                using (Pen pen = new Pen(color, 2F)
+                       {
+                           StartCap = LineCap.Round,
+                           EndCap = LineCap.Round,
+                           LineJoin = LineJoin.Round
+                       })
+                {
+                    matrix.Translate(bounds.Left, bounds.Top);
+                    matrix.Scale(bounds.Width / 24F, bounds.Height / 24F);
+
+                    GraphicsState state = graphics.Save();
+                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    graphics.Transform = matrix;
+                    graphics.DrawPath(pen, path);
+                    graphics.Restore(state);
+                }
+            }
+
+            private GraphicsPath BuildPath()
+            {
+                List<string> tokens = TokenRegex.Matches(_pathData)
+                    .Cast<Match>()
+                    .Select(match => match.Value)
+                    .ToList();
+
+                GraphicsPath path = new GraphicsPath();
+                PointF current = PointF.Empty;
+                PointF figureStart = PointF.Empty;
+                char command = '\0';
+                int index = 0;
+
+                while (index < tokens.Count)
+                {
+                    if (IsCommand(tokens[index]))
+                    {
+                        command = tokens[index][0];
+                        index++;
+                    }
+
+                    switch (command)
+                    {
+                        case 'M':
+                        case 'm':
+                            current = ReadPoint(tokens, ref index, current, command == 'm');
+                            figureStart = current;
+                            path.StartFigure();
+                            command = command == 'm' ? 'l' : 'L';
+                            break;
+                        case 'L':
+                        case 'l':
+                            AddLine(path, ref current, ReadPoint(tokens, ref index, current, command == 'l'));
+                            break;
+                        case 'H':
+                        case 'h':
+                            AddLine(path, ref current, new PointF(
+                                command == 'h' ? current.X + ReadNumber(tokens, ref index) : ReadNumber(tokens, ref index),
+                                current.Y));
+                            break;
+                        case 'V':
+                        case 'v':
+                            AddLine(path, ref current, new PointF(
+                                current.X,
+                                command == 'v' ? current.Y + ReadNumber(tokens, ref index) : ReadNumber(tokens, ref index)));
+                            break;
+                        case 'A':
+                        case 'a':
+                            SkipArcArgumentsAndLineToEnd(path, tokens, ref index, ref current, command == 'a');
+                            break;
+                        case 'Z':
+                        case 'z':
+                            AddLine(path, ref current, figureStart);
+                            path.CloseFigure();
+                            break;
+                        default:
+                            index++;
+                            break;
+                    }
+                }
+
+                return path;
+            }
+
+            private static void SkipArcArgumentsAndLineToEnd(
+                GraphicsPath path,
+                List<string> tokens,
+                ref int index,
+                ref PointF current,
+                bool relative)
+            {
+                ReadNumber(tokens, ref index);
+                ReadNumber(tokens, ref index);
+                ReadNumber(tokens, ref index);
+                ReadNumber(tokens, ref index);
+                ReadNumber(tokens, ref index);
+                PointF end = ReadPoint(tokens, ref index, current, relative);
+                AddLine(path, ref current, end);
+            }
+
+            private static PointF ReadPoint(List<string> tokens, ref int index, PointF current, bool relative)
+            {
+                float x = ReadNumber(tokens, ref index);
+                float y = ReadNumber(tokens, ref index);
+                return relative ? new PointF(current.X + x, current.Y + y) : new PointF(x, y);
+            }
+
+            private static float ReadNumber(List<string> tokens, ref int index)
+            {
+                return float.Parse(tokens[index++], System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            private static void AddLine(GraphicsPath path, ref PointF current, PointF next)
+            {
+                path.AddLine(current, next);
+                current = next;
+            }
+
+            private static bool IsCommand(string token)
+            {
+                return token.Length == 1 && char.IsLetter(token[0]);
             }
         }
     }
