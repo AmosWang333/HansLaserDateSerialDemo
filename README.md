@@ -162,9 +162,9 @@ yyyyMMdd-{0:0000}
 | `Pending` | 已占用但未确认完成。 |
 | `Marked` | 激光打标正常完成。 |
 | `Skipped` | 操作员确认已用或跳过。 |
-| `Reprinted` | 历史编号重新打标生成的记录。 |
+| `Reprinted` | 原历史编号已执行过重新打标。 |
 
-历史编号重新打标不会占用新的日流水号。重新打标前必须先启动该历史记录所属产品的配置和模板。重新打标正常结束后，会新增一条 `Reprinted` 记录，并通过 `SourceRecordId` 关联原始记录。
+历史编号重新打标不会占用新的日流水号。重新打标前必须先启动该历史记录所属产品的配置和模板。由于 `MarkingRecords.Code` 在数据库中保持唯一，重新打标正常结束后不会新增相同编号的记录，而是把原记录状态更新为 `Reprinted`，并在备注中追加重新打标时间。
 
 ## 数据文件
 
@@ -176,7 +176,7 @@ yyyyMMdd-{0:0000}
 | `data.db` | SQLite 数据库，保存产品、流水状态和历史记录。 |
 | `mark-audit.csv` | 简要审计日志，记录预览、打标、异常和重打标事件。 |
 
-数据库会自动创建，并在启动时补齐缺失列，例如 `Products.CodeGeneratorType`、`Products.SerialStartValue`、`MarkingRecords.SourceRecordId` 等。
+数据库会自动创建，并在启动时补齐缺失列，例如 `Products.CodeGeneratorType`、`Products.SerialStartValue`、`MarkingRecords.SourceRecordId` 等。`MarkingRecords.Code` 会创建唯一索引；如果已有历史数据中存在重复编号，程序会在启动时提示重复值，需要先清理历史数据后再继续。
 
 ## 使用的厂家接口
 
