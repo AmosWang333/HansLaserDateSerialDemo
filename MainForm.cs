@@ -13,9 +13,7 @@ namespace HansLaserDateSerialDemo
         private const string AuditFile = @".\mark-audit.csv";
 
         private readonly ToolStripButton _settingsButton;
-        private readonly ToolStripButton _startButton;
         private readonly ToolStripButton _historyButton;
-        private readonly Label _status;
         private Label _codeValue;
         private Label _dateValue;
         private Label _serialValue;
@@ -45,14 +43,13 @@ namespace HansLaserDateSerialDemo
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 3,
+                RowCount = 2,
                 Margin = Padding.Empty,
                 Padding = Padding.Empty
             };
             shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
-            shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
-            shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            shell.RowStyles.Add(new RowStyle(SizeType.Percent, 136F));
             Controls.Add(shell);
 
             ToolStrip toolStrip = new ToolStrip
@@ -79,22 +76,6 @@ namespace HansLaserDateSerialDemo
             _settingsButton.Click += async delegate { await OpenSettingsAsync(); };
             toolStrip.Items.Add(_settingsButton);
 
-            _startButton = new ToolStripButton("启动")
-            {
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                AutoSize = false,
-                Width = 96,
-                Height = 32,
-                Margin = new Padding(0, 0, 8, 0),
-                Padding = new Padding(12, 0, 12, 0),
-                Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
-                BackColor = Color.FromArgb(0, 120, 215),
-                ForeColor = Color.White,
-                ToolTipText = "按已保存配置初始化设备并加载模板"
-            };
-            _startButton.Click += async delegate { await StartWithSavedConfigurationAsync(); };
-            toolStrip.Items.Add(_startButton);
-
             _historyButton = new ToolStripButton("历史记录")
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Text,
@@ -111,27 +92,20 @@ namespace HansLaserDateSerialDemo
 
             shell.Controls.Add(toolStrip, 0, 0);
 
-            _status = new Label
-            {
-                AutoSize = false,
-                Dock = DockStyle.Fill,
-                Margin = Padding.Empty,
-                Padding = new Padding(12, 9, 12, 0),
-                Text = "未应用配置",
-                BackColor = Color.FromArgb(245, 247, 250)
-            };
-            shell.Controls.Add(_status, 0, 1);
-
             Panel content = new Panel
             {
                 Dock = DockStyle.Fill,
                 Margin = Padding.Empty,
                 Padding = new Padding(12)
             };
-            shell.Controls.Add(content, 0, 2);
+            shell.Controls.Add(content, 0, 1);
             content.Controls.Add(BuildOperationPanel());
 
-            Load += delegate { LoadConfiguration(); };
+            Load += async delegate
+            {
+                LoadConfiguration();
+                await StartWithSavedConfigurationWithRetryAsync();
+            };
             FormClosing += delegate { DisposeApi(); };
         }
 
@@ -352,7 +326,6 @@ namespace HansLaserDateSerialDemo
             catch (Exception ex)
             {
                 Log($"载入配置失败：{ex.Message}");
-                SetStatus("配置载入失败", true);
             }
         }
 
@@ -381,10 +354,30 @@ namespace HansLaserDateSerialDemo
             }
         }
 
-        private async Task StartWithSavedConfigurationAsync()
+        private async Task StartWithSavedConfigurationWithRetryAsync()
+        {
+            while (!IsDisposed)
+            {
+                string errorMessage = await StartWithSavedConfigurationAsync();
+                if (string.IsNullOrEmpty(errorMessage))
+                    return;
+
+                DialogResult result = MessageBox.Show(
+                    $"启动失败：{errorMessage}",
+                    "启动",
+                    MessageBoxButtons.RetryCancel,
+                    MessageBoxIcon.Error,
+                    MessageBoxDefaultButton.Button1);
+
+                if (result != DialogResult.Retry)
+                    return;
+            }
+        }
+
+        private async Task<string> StartWithSavedConfigurationAsync()
         {
             if (_busy)
-                return;
+                return "系统正忙，请稍后重试。";
 
             AppConfiguration configuration;
             try
@@ -393,16 +386,16 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"载入已保存配置失败：{ex.Message}", "启动", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                Log($"载入已保存配置失败：{ex.Message}");
+                return ex.Message;
             }
 
-            await ApplyConfigurationAsync(configuration, false);
+            return await ApplyConfigurationAsync(configuration, false);
         }
 
-        private async Task ApplyConfigurationAsync(AppConfiguration configuration, bool saveConfiguration)
+        private async Task<string> ApplyConfigurationAsync(AppConfiguration configuration, bool saveConfiguration)
         {
-            await RunBusyAsync("正在应用配置……", delegate
+            return await RunBusyAsync("正在应用配置……", delegate
             {
                 if (saveConfiguration)
                     AppConfiguration.Save(ConfigFile, configuration);
@@ -434,7 +427,6 @@ namespace HansLaserDateSerialDemo
                             CodeGeneratorFactory.Create(product.CodeGeneratorType, product.Pattern));
                         Log((saveConfiguration ? "配置已保存并应用：" : "已按保存配置启动：") + version);
                         ReserveAndDisplayCurrent();
-                        SetStatus("配置已应用，模板已加载", false);
                     }));
                 }
                 catch
@@ -567,7 +559,6 @@ namespace HansLaserDateSerialDemo
                     BeginInvoke(new Action(delegate
                     {
                         Log($"打标未正常完成：{status}。编号仍处于待确认状态。");
-                        SetStatus("打标未正常完成，编号未提交", true);
                     }));
                 }
                 catch (Exception ex)
@@ -576,7 +567,6 @@ namespace HansLaserDateSerialDemo
                     BeginInvoke(new Action(delegate
                     {
                         Log($"打标调用异常：{ex.Message}");
-                        SetStatus("打标异常，编号仍处于待确认状态", true);
                     }));
                 }
             });
@@ -680,7 +670,6 @@ namespace HansLaserDateSerialDemo
                         BeginInvoke(new Action(delegate
                         {
                             Log($"历史编号重新打标未正常完成：{status}");
-                            SetStatus("历史编号重新打标未正常完成", true);
                         }));
                     }
                 }
@@ -690,7 +679,6 @@ namespace HansLaserDateSerialDemo
                     BeginInvoke(new Action(delegate
                     {
                         Log($"历史编号重新打标异常：{ex.Message}");
-                        SetStatus("历史编号重新打标异常", true);
                     }));
                 }
                 finally
@@ -728,12 +716,10 @@ namespace HansLaserDateSerialDemo
                 _pendingWarning.Text = _reservation.WasAlreadyPending
                     ? "上次未确认完成；请检查工件/MES 后再重打或跳过。"
                     : "新编号已占用，等待预览、打标或确认跳过。";
-                SetStatus($"当前编号：{_reservation.Code}", false);
             }
             catch (Exception ex)
             {
                 Log($"准备当前编号失败：{ex.Message}");
-                SetStatus("准备当前编号失败", true);
             }
             finally
             {
@@ -741,20 +727,20 @@ namespace HansLaserDateSerialDemo
             }
         }
 
-        private async Task RunBusyAsync(string status, Action action)
+        private async Task<string> RunBusyAsync(string status, Action action)
         {
             _busy = true;
-            SetStatus(status, false);
             UpdateActionButtons();
 
             try
             {
                 await Task.Run(action);
+                return null;
             }
             catch (Exception ex)
             {
                 Log($"操作失败：{ex.Message}");
-                SetStatus("操作失败", true);
+                return ex.Message;
             }
             finally
             {
@@ -767,18 +753,11 @@ namespace HansLaserDateSerialDemo
         {
             bool ready = !_busy && _api != null && _reservation != null;
             _settingsButton.Enabled = !_busy;
-            _startButton.Enabled = !_busy;
             _historyButton.Enabled = !_busy;
             _previewButton.Enabled = ready;
             _markButton.Enabled = ready;
             _skipButton.Enabled = ready;
             _exitButton.Enabled = !_busy;
-        }
-
-        private void SetStatus(string text, bool warning)
-        {
-            _status.Text = text;
-            _status.ForeColor = warning ? Color.FromArgb(150, 50, 0) : Color.FromArgb(30, 70, 110);
         }
 
         private void Log(string message)
