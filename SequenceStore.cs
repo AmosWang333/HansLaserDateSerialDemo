@@ -1,7 +1,5 @@
 using System;
 using System.Linq;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 
 namespace HansLaserDateSerialDemo
 {
@@ -60,8 +58,13 @@ namespace HansLaserDateSerialDemo
                         {
                             MarkingRecord pending = dbContext.MarkingRecords
                                 .Single(record => record.Id == state.PendingRecordId.Value);
-                            transaction.Commit();
-                            return ToReservation(pending, true);
+                            if (string.Equals(pending.State, MarkingRecordStates.Pending, StringComparison.Ordinal))
+                            {
+                                transaction.Commit();
+                                return ToReservation(pending, true);
+                            }
+
+                            state.PendingRecordId = null;
                         }
 
                         if (state.BusinessDate.Date != today)
@@ -70,39 +73,9 @@ namespace HansLaserDateSerialDemo
                             state.NextSerial = _serialStartValue;
                         }
 
-                        if (state.NextSerial < 1 || state.NextSerial > 9999)
-                            throw new InvalidOperationException("当天流水号已经达到 9999，禁止回卷到起始值。");
-
-                        int serial = state.NextSerial;
-                        string code = _codeGenerator.Build(today, serial);
-                        MarkingRecord record = new MarkingRecord
-                        {
-                            ProductId = _productId,
-                            Code = code,
-                            Serial = serial,
-                            BusinessDate = today,
-                            State = MarkingRecordStates.Pending,
-                            CreatedAt = now,
-                            UpdatedAt = now
-                        };
-
-                        dbContext.MarkingRecords.Add(record);
-                        try
-                        {
-                            dbContext.SaveChanges();
-                        }
-                        catch (DbUpdateException ex) when (IsUniqueCodeViolation(ex))
-                        {
-                            throw new InvalidOperationException(
-                                $"编号已存在，无法占用新编号：{code}。请检查产品编码前缀、日期和流水号起始值。", ex);
-                        }
-
-                        state.PendingRecordId = record.Id;
-                        state.NextSerial = serial + 1;
-                        dbContext.SaveChanges();
+                        Reservation reservation = ReserveNextAvailable(dbContext, state, today, now);
                         transaction.Commit();
-
-                        return ToReservation(record, false);
+                        return reservation;
                     }
                 }
             }
@@ -170,6 +143,57 @@ namespace HansLaserDateSerialDemo
             return state;
         }
 
+        private Reservation ReserveNextAvailable(
+            AppDbContext dbContext,
+            ProductSequenceState state,
+            DateTime today,
+            DateTime now)
+        {
+            int serial = state.NextSerial;
+            while (serial >= 1 && serial <= 9999)
+            {
+                string code = _codeGenerator.Build(today, serial);
+                MarkingRecord existing = dbContext.MarkingRecords
+                    .SingleOrDefault(record => record.Code == code);
+
+                if (existing == null)
+                {
+                    MarkingRecord record = new MarkingRecord
+                    {
+                        ProductId = _productId,
+                        Code = code,
+                        Serial = serial,
+                        BusinessDate = today,
+                        State = MarkingRecordStates.Pending,
+                        CreatedAt = now,
+                        UpdatedAt = now
+                    };
+
+                    dbContext.MarkingRecords.Add(record);
+                    dbContext.SaveChanges();
+
+                    state.PendingRecordId = record.Id;
+                    state.NextSerial = serial + 1;
+                    dbContext.SaveChanges();
+
+                    return ToReservation(record, false);
+                }
+
+                if (string.Equals(existing.State, MarkingRecordStates.Pending, StringComparison.Ordinal))
+                {
+                    state.PendingRecordId = existing.Id;
+                    state.NextSerial = serial + 1;
+                    dbContext.SaveChanges();
+
+                    return ToReservation(existing, true);
+                }
+
+                serial++;
+            }
+
+            throw new InvalidOperationException("当天流水号已经达到 9999，禁止回卷到起始值。");
+        }
+
         private static Reservation ToReservation(MarkingRecord record, bool wasAlreadyPending)
         {
             return new Reservation
@@ -190,13 +214,6 @@ namespace HansLaserDateSerialDemo
             if (value > 9999)
                 return 9999;
             return value;
-        }
-
-        private static bool IsUniqueCodeViolation(DbUpdateException ex)
-        {
-            return ex.InnerException is SqliteException sqliteException &&
-                   sqliteException.SqliteErrorCode == 19 &&
-                   sqliteException.Message.Contains("MarkingRecords.Code", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
