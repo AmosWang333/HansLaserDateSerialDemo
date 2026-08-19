@@ -29,7 +29,10 @@ namespace HansLaserDateSerialDemo
         private Product _editingProduct;
         private bool _refreshingProductsGrid;
         private readonly SvgPathIcon _addIcon = new SvgPathIcon("M5 12h14m-7 7V5");
-        private readonly SvgPathIcon _deleteIcon = new SvgPathIcon("m5 6l.876 13.133A2 2 0 0 0 7.87 21h8.258a2 2 0 0 0 1.995-1.867L19 6M8 6l.772-2.316A1 1 0 0 1 9.721 3h4.558a1 1 0 0 1 .949.684L16 6m-6 5v5m4-5v5M4 6h16");
+
+        private readonly SvgPathIcon _deleteIcon =
+            new SvgPathIcon(
+                "m5 6l.876 13.133A2 2 0 0 0 7.87 21h8.258a2 2 0 0 0 1.995-1.867L19 6M8 6l.772-2.316A1 1 0 0 1 9.721 3h4.558a1 1 0 0 1 .949.684L16 6m-6 5v5m4-5v5M4 6h16");
 
         public AppConfiguration Configuration { get; private set; }
 
@@ -157,26 +160,33 @@ namespace HansLaserDateSerialDemo
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 RowHeadersVisible = false
             };
-            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "新增", UseColumnTextForButtonValue = false, Width = 36 });
-            _productsGrid.Columns.Add(new DataGridViewButtonColumn { HeaderText = "删除", UseColumnTextForButtonValue = false, Width = 36 });
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "名称", DataPropertyName = "Name", Width = 150 });
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 150 });
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 90 });
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "起始流水", DataPropertyName = "SerialStartValue", Width = 90 });
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "生成器", DataPropertyName = "CodeGeneratorType", Width = 100 });
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "模板", DataPropertyName = "TemplatePath", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 150});
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 100 });
+            _productsGrid.Columns.Add(new DataGridViewButtonColumn
+                { HeaderText = "新增", UseColumnTextForButtonValue = false, Width = 36 });
+            _productsGrid.Columns.Add(new DataGridViewButtonColumn
+                { HeaderText = "删除", UseColumnTextForButtonValue = false, Width = 36 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
+                { HeaderText = "名称", DataPropertyName = "Name", Width = 150 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
+                { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 150 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
+                { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 90 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
+                { HeaderText = "起始流水", DataPropertyName = "SerialStartValue", Width = 90 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
+                { HeaderText = "生成器", DataPropertyName = "CodeGeneratorType", Width = 100 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "模板", DataPropertyName = "TemplatePath",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 150
+            });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
+                { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 100 });
             _productsGrid.CellContentClick += delegate(object sender, DataGridViewCellEventArgs e)
             {
                 if (e.RowIndex >= 0 && e.ColumnIndex == 0)
                     AddProductRow();
                 else if (e.RowIndex >= 0 && e.ColumnIndex == 1)
                     BeginInvoke(new Action(delegate { DeleteProductAtRow(e.RowIndex); }));
-            };
-            _productsGrid.ColumnHeaderMouseClick += delegate(object sender, DataGridViewCellMouseEventArgs e)
-            {
-                if (e.ColumnIndex == 0)
-                    AddProductRow();
             };
             _productsGrid.CellPainting += PaintProductActionIcon;
             _productsGrid.DataError += delegate(object sender, DataGridViewDataErrorEventArgs e)
@@ -374,7 +384,8 @@ namespace HansLaserDateSerialDemo
             grid.Controls.Add(name, 0, row);
         }
 
-        private TextBox AddPathSettingTextBox(TableLayoutPanel grid, int row, string label, Action<TextBox> browseAction)
+        private TextBox AddPathSettingTextBox(TableLayoutPanel grid, int row, string label,
+            Action<TextBox> browseAction)
         {
             AddLabel(grid, row, label);
 
@@ -461,6 +472,7 @@ namespace HansLaserDateSerialDemo
                 if (product.Id > 0)
                     _productComboBox.Items.Add(new Selection<Product>(BuildProductLabel(product), product));
             }
+
             _productComboBox.EndUpdate();
             SelectProduct(selectedProductId);
         }
@@ -514,14 +526,24 @@ namespace HansLaserDateSerialDemo
 
         private void FocusProductRow(int rowIndex)
         {
-            if (rowIndex >= 0 && rowIndex < _productsGrid.Rows.Count)
+            if (rowIndex < 0 || rowIndex >= _products.Count || rowIndex >= _productsGrid.Rows.Count)
+                return;
+
+            if (_productsGrid.DataSource != null && _productsGrid.BindingContext != null)
             {
-                _productsGrid.ClearSelection();
-                _productsGrid.CurrentCell = _productsGrid.Rows[rowIndex].Cells[2];
-                _productsGrid.Rows[rowIndex].Selected = true;
-                _productsGrid.Focus();
-                LoadSelectedProductForEdit();
+                CurrencyManager currencyManager =
+                    _productsGrid.BindingContext[_productsGrid.DataSource] as CurrencyManager;
+                if (currencyManager == null || currencyManager.Count <= rowIndex)
+                    return;
+
+                currencyManager.Position = rowIndex;
             }
+
+            _productsGrid.ClearSelection();
+            _productsGrid.CurrentCell = _productsGrid.Rows[rowIndex].Cells[2];
+            _productsGrid.Rows[rowIndex].Selected = true;
+            _productsGrid.Focus();
+            LoadSelectedProductForEdit();
         }
 
         private void DeleteProductAtRow(int rowIndex)
@@ -627,8 +649,11 @@ namespace HansLaserDateSerialDemo
 
             _productNameTextBox.Text = _editingProduct.Name;
             _customerPartNumberTextBox.Text = _editingProduct.CustomerPartNumber;
-            _shipcodeBox.Value = Math.Max(_shipcodeBox.Minimum, Math.Min(_shipcodeBox.Maximum, _editingProduct.Shipcode));
-            _serialStartValueBox.Value = Math.Max(_serialStartValueBox.Minimum, Math.Min(_serialStartValueBox.Maximum, _editingProduct.SerialStartValue <= 0 ? 1 : _editingProduct.SerialStartValue));
+            _shipcodeBox.Value =
+                Math.Max(_shipcodeBox.Minimum, Math.Min(_shipcodeBox.Maximum, _editingProduct.Shipcode));
+            _serialStartValueBox.Value = Math.Max(_serialStartValueBox.Minimum,
+                Math.Min(_serialStartValueBox.Maximum,
+                    _editingProduct.SerialStartValue <= 0 ? 1 : _editingProduct.SerialStartValue));
             SelectProductCodeGenerator(_editingProduct.CodeGeneratorType);
             _productTemplatePathTextBox.Text = _editingProduct.TemplatePath;
             _productPatternTextBox.Text = _editingProduct.Pattern;
@@ -777,7 +802,8 @@ namespace HansLaserDateSerialDemo
 
             for (int i = 0; i < _productCodeGeneratorComboBox.Items.Count; i++)
             {
-                if (string.Equals(_productCodeGeneratorComboBox.Items[i].ToString(), value, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(_productCodeGeneratorComboBox.Items[i].ToString(), value,
+                        StringComparison.OrdinalIgnoreCase))
                 {
                     _productCodeGeneratorComboBox.SelectedIndex = i;
                     return;
@@ -891,14 +917,18 @@ namespace HansLaserDateSerialDemo
                         case 'H':
                         case 'h':
                             AddLine(path, ref current, new PointF(
-                                command == 'h' ? current.X + ReadNumber(tokens, ref index) : ReadNumber(tokens, ref index),
+                                command == 'h'
+                                    ? current.X + ReadNumber(tokens, ref index)
+                                    : ReadNumber(tokens, ref index),
                                 current.Y));
                             break;
                         case 'V':
                         case 'v':
                             AddLine(path, ref current, new PointF(
                                 current.X,
-                                command == 'v' ? current.Y + ReadNumber(tokens, ref index) : ReadNumber(tokens, ref index)));
+                                command == 'v'
+                                    ? current.Y + ReadNumber(tokens, ref index)
+                                    : ReadNumber(tokens, ref index)));
                             break;
                         case 'A':
                         case 'a':
