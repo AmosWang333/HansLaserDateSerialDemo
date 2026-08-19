@@ -84,7 +84,6 @@ namespace HansLaserDateSerialDemo
             AppendJsonLine(builder, "VariableTextAlias", VariableTextAlias, true);
             builder.Append("  \"UseFootPedal\": ").Append(UseFootPedal ? "true" : "false").AppendLine(",");
             builder.Append("  \"FootPedalTimeoutMs\": ").Append(FootPedalTimeoutMs).AppendLine(",");
-            AppendJsonLine(builder, "CodeGeneratorType", CodeGeneratorType, true);
             builder.Append("  \"ProductId\": ").Append(ProductId).AppendLine();
             builder.AppendLine("}");
             return builder.ToString();
@@ -102,8 +101,6 @@ namespace HansLaserDateSerialDemo
         {
             if (FootPedalTimeoutMs <= 0)
                 FootPedalTimeoutMs = DefaultFootPedalTimeoutMs;
-            if (string.IsNullOrWhiteSpace(CodeGeneratorType))
-                CodeGeneratorType = DefaultCodeGeneratorType;
             if (ProductId < 0)
                 ProductId = DefaultProductId;
         }
@@ -116,9 +113,6 @@ namespace HansLaserDateSerialDemo
                 throw new InvalidDataException($"{sourceName} 缺少 VariableTextAlias。");
             if (FootPedalTimeoutMs < 1000)
                 throw new InvalidDataException($"{sourceName} 的 FootPedalTimeoutMs 至少应为 1000。");
-            if (!string.Equals(CodeGeneratorType, CodeGeneratorTypes.Normal, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(CodeGeneratorType, CodeGeneratorTypes.EcoFlow, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException($"{sourceName} 的 CodeGeneratorType 无效。");
         }
 
         private static void AppendJsonLine(StringBuilder builder, string name, string value, bool comma)

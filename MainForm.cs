@@ -430,7 +430,7 @@ namespace HansLaserDateSerialDemo
                         _product = product;
                         _store = new SequenceStore(
                             product,
-                            CodeGeneratorFactory.Create(configuration.CodeGeneratorType, product.Pattern));
+                            CodeGeneratorFactory.Create(product.CodeGeneratorType, product.Pattern));
                         Log((saveConfiguration ? "配置已保存并应用：" : "已按保存配置启动：") + version);
                         ReserveAndDisplayCurrent();
                         SetStatus("配置已应用，模板已加载", false);
@@ -469,7 +469,6 @@ namespace HansLaserDateSerialDemo
                 VariableTextAlias = "CODE",
                 UseFootPedal = AppConfiguration.DefaultUseFootPedal,
                 FootPedalTimeoutMs = AppConfiguration.DefaultFootPedalTimeoutMs,
-                CodeGeneratorType = AppConfiguration.DefaultCodeGeneratorType,
                 ProductId = AppConfiguration.DefaultProductId
             };
             AppConfiguration.Save(ConfigFile, configuration);

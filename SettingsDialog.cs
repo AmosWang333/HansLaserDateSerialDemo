@@ -12,7 +12,6 @@ namespace HansLaserDateSerialDemo
     {
         private readonly TextBox _machinePathTextBox;
         private readonly TextBox _variableTextAliasTextBox;
-        private readonly ComboBox _codeGeneratorComboBox;
         private readonly ComboBox _productComboBox;
         private readonly CheckBox _useFootPedal;
         private readonly NumericUpDown _footPedalTimeoutSeconds;
@@ -22,6 +21,7 @@ namespace HansLaserDateSerialDemo
         private readonly TextBox _customerPartNumberTextBox;
         private readonly NumericUpDown _shipcodeBox;
         private readonly NumericUpDown _serialStartValueBox;
+        private readonly ComboBox _productCodeGeneratorComboBox;
         private readonly TextBox _productTemplatePathTextBox;
         private readonly TextBox _productPatternTextBox;
 
@@ -79,15 +79,11 @@ namespace HansLaserDateSerialDemo
             _dllVersionLabel = AddDllVersionRow(basicGrid, 1);
             _variableTextAliasTextBox = AddSettingTextBox(basicGrid, 2, "可变文本别名");
 
-            GroupBox generatorBox = AddGroup(settingsRoot, "编号与产品", 128);
-            TableLayoutPanel generatorGrid = CreateFormGrid(2);
+            GroupBox generatorBox = AddGroup(settingsRoot, "产品", 82);
+            TableLayoutPanel generatorGrid = CreateFormGrid(1);
             generatorBox.Controls.Add(generatorGrid);
 
-            _codeGeneratorComboBox = AddComboBox(generatorGrid, 0, "生成器");
-            _codeGeneratorComboBox.Items.Add(CodeGeneratorTypes.EcoFlow);
-            _codeGeneratorComboBox.Items.Add(CodeGeneratorTypes.Normal);
-
-            _productComboBox = AddComboBox(generatorGrid, 1, "产品");
+            _productComboBox = AddComboBox(generatorGrid, 0, "产品");
 
             GroupBox pedalBox = AddGroup(settingsRoot, "脚踏触发", 104);
             TableLayoutPanel pedalGrid = new TableLayoutPanel
@@ -147,7 +143,7 @@ namespace HansLaserDateSerialDemo
                 Padding = new Padding(10)
             };
             productsRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            productsRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 292));
+            productsRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 380));
             productsPage.Controls.Add(productsRoot);
 
             _productsGrid = new DataGridView
@@ -167,8 +163,9 @@ namespace HansLaserDateSerialDemo
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 150 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 90 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "起始流水", DataPropertyName = "SerialStartValue", Width = 90 });
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "模板", DataPropertyName = "TemplatePath", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill });
-            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 150 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "生成器", DataPropertyName = "CodeGeneratorType", Width = 100 });
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "模板", DataPropertyName = "TemplatePath", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 150});
+            _productsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 100 });
             _productsGrid.CellContentClick += delegate(object sender, DataGridViewCellEventArgs e)
             {
                 if (e.RowIndex >= 0 && e.ColumnIndex == 0)
@@ -207,11 +204,11 @@ namespace HansLaserDateSerialDemo
                 ColumnCount = 1,
                 RowCount = 2
             };
-            editorRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            editorRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 318));
             editorRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
             editorBox.Controls.Add(editorRoot);
 
-            TableLayoutPanel editorGrid = CreateFormGrid(6);
+            TableLayoutPanel editorGrid = CreateFormGrid(7);
             editorGrid.ColumnStyles[0].Width = 110;
             editorRoot.Controls.Add(editorGrid, 0, 0);
 
@@ -221,12 +218,15 @@ namespace HansLaserDateSerialDemo
             _serialStartValueBox = AddNumericSetting(editorGrid, 3, "起始流水");
             _serialStartValueBox.Minimum = 1;
             _serialStartValueBox.Maximum = 9999;
+            _productCodeGeneratorComboBox = AddComboBox(editorGrid, 4, "生成器");
+            _productCodeGeneratorComboBox.Items.Add(CodeGeneratorTypes.EcoFlow);
+            _productCodeGeneratorComboBox.Items.Add(CodeGeneratorTypes.Normal);
             _productTemplatePathTextBox = AddPathSettingTextBox(
                 editorGrid,
-                4,
+                5,
                 "打标模板",
                 delegate(TextBox textBox) { BrowseFile(textBox, "选择打标模板", "打标模板 (*.HS)|*.HS|所有文件 (*.*)|*.*"); });
-            _productPatternTextBox = AddSettingTextBox(editorGrid, 5, "Pattern");
+            _productPatternTextBox = AddSettingTextBox(editorGrid, 6, "Pattern");
 
             FlowLayoutPanel productButtons = new FlowLayoutPanel
             {
@@ -311,7 +311,7 @@ namespace HansLaserDateSerialDemo
             grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
             grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             for (int i = 0; i < rows; i++)
-                grid.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / rows));
+                grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
             return grid;
         }
 
@@ -601,7 +601,6 @@ namespace HansLaserDateSerialDemo
         {
             _machinePathTextBox.Text = configuration.MachinePath;
             _variableTextAliasTextBox.Text = configuration.VariableTextAlias;
-            SelectCodeGenerator(configuration.CodeGeneratorType);
             _useFootPedal.Checked = configuration.UseFootPedal;
             _dllVersionLabel.Text = "未读取";
             _footPedalTimeoutSeconds.Value = Math.Max(
@@ -630,6 +629,7 @@ namespace HansLaserDateSerialDemo
             _customerPartNumberTextBox.Text = _editingProduct.CustomerPartNumber;
             _shipcodeBox.Value = Math.Max(_shipcodeBox.Minimum, Math.Min(_shipcodeBox.Maximum, _editingProduct.Shipcode));
             _serialStartValueBox.Value = Math.Max(_serialStartValueBox.Minimum, Math.Min(_serialStartValueBox.Maximum, _editingProduct.SerialStartValue <= 0 ? 1 : _editingProduct.SerialStartValue));
+            SelectProductCodeGenerator(_editingProduct.CodeGeneratorType);
             _productTemplatePathTextBox.Text = _editingProduct.TemplatePath;
             _productPatternTextBox.Text = _editingProduct.Pattern;
         }
@@ -641,6 +641,7 @@ namespace HansLaserDateSerialDemo
             _customerPartNumberTextBox.Clear();
             _shipcodeBox.Value = 0;
             _serialStartValueBox.Value = 1;
+            SelectProductCodeGenerator(CodeGeneratorTypes.EcoFlow);
             _productTemplatePathTextBox.Clear();
             _productPatternTextBox.Clear();
             _productsGrid.ClearSelection();
@@ -655,6 +656,9 @@ namespace HansLaserDateSerialDemo
                 product.CustomerPartNumber = _customerPartNumberTextBox.Text.Trim();
                 product.Shipcode = Convert.ToInt32(_shipcodeBox.Value);
                 product.SerialStartValue = Convert.ToInt32(_serialStartValueBox.Value);
+                product.CodeGeneratorType = _productCodeGeneratorComboBox.SelectedItem == null
+                    ? CodeGeneratorTypes.EcoFlow
+                    : _productCodeGeneratorComboBox.SelectedItem.ToString();
                 product.TemplatePath = _productTemplatePathTextBox.Text.Trim();
                 product.Pattern = _productPatternTextBox.Text.Trim();
 
@@ -689,6 +693,8 @@ namespace HansLaserDateSerialDemo
                 throw new InvalidDataException("Pattern 不能为空。");
             if (product.SerialStartValue < 1 || product.SerialStartValue > 9999)
                 throw new InvalidDataException("起始流水必须在 1-9999 之间。");
+            if (!IsCodeGeneratorTypeValid(product.CodeGeneratorType))
+                throw new InvalidDataException("生成器无效。");
         }
 
         private void ReadDllVersion()
@@ -763,22 +769,28 @@ namespace HansLaserDateSerialDemo
             }
         }
 
-        private void SelectCodeGenerator(string generatorType)
+        private void SelectProductCodeGenerator(string generatorType)
         {
             string value = string.IsNullOrWhiteSpace(generatorType)
-                ? AppConfiguration.DefaultCodeGeneratorType
+                ? CodeGeneratorTypes.EcoFlow
                 : generatorType;
 
-            for (int i = 0; i < _codeGeneratorComboBox.Items.Count; i++)
+            for (int i = 0; i < _productCodeGeneratorComboBox.Items.Count; i++)
             {
-                if (string.Equals(_codeGeneratorComboBox.Items[i].ToString(), value, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(_productCodeGeneratorComboBox.Items[i].ToString(), value, StringComparison.OrdinalIgnoreCase))
                 {
-                    _codeGeneratorComboBox.SelectedIndex = i;
+                    _productCodeGeneratorComboBox.SelectedIndex = i;
                     return;
                 }
             }
 
-            _codeGeneratorComboBox.SelectedIndex = 0;
+            _productCodeGeneratorComboBox.SelectedIndex = 0;
+        }
+
+        private static bool IsCodeGeneratorTypeValid(string generatorType)
+        {
+            return string.Equals(generatorType, CodeGeneratorTypes.Normal, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(generatorType, CodeGeneratorTypes.EcoFlow, StringComparison.OrdinalIgnoreCase);
         }
 
         private void SaveAndClose()
@@ -796,9 +808,6 @@ namespace HansLaserDateSerialDemo
                     VariableTextAlias = _variableTextAliasTextBox.Text.Trim(),
                     UseFootPedal = _useFootPedal.Checked,
                     FootPedalTimeoutMs = Convert.ToInt32(_footPedalTimeoutSeconds.Value) * 1000,
-                    CodeGeneratorType = _codeGeneratorComboBox.SelectedItem == null
-                        ? AppConfiguration.DefaultCodeGeneratorType
-                        : _codeGeneratorComboBox.SelectedItem.ToString(),
                     ProductId = product.Id
                 };
 

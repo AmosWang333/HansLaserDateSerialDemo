@@ -58,6 +58,7 @@ public class AppDbContext : DbContext
 
             Database.EnsureCreated();
             EnsureTables();
+            EnsureColumn("Products", "CodeGeneratorType", "TEXT NOT NULL DEFAULT 'EcoFlow'");
             EnsureColumn("Products", "SerialStartValue", "INTEGER NOT NULL DEFAULT 1");
             EnsureColumn("MarkingRecords", "Serial", "INTEGER NOT NULL DEFAULT 0");
             EnsureColumn("MarkingRecords", "BusinessDate", "TEXT NOT NULL DEFAULT '0001-01-01 00:00:00'");
@@ -82,6 +83,7 @@ public class AppDbContext : DbContext
                 Shipcode INTEGER NOT NULL,
                 TemplatePath TEXT NULL,
                 Pattern TEXT NULL,
+                CodeGeneratorType TEXT NOT NULL DEFAULT 'EcoFlow',
                 SerialStartValue INTEGER NOT NULL DEFAULT 1
             )");
 

@@ -13,7 +13,15 @@
     <configurations />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fb5b8294-9c8e-4fe8-a7d5-9609cb5d97a2" name="更改" comment="" />
+    <list default="true" id="fb5b8294-9c8e-4fe8-a7d5-9609cb5d97a2" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.HansLaserDateSerialDemo.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.HansLaserDateSerialDemo.dir/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AppConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AppConfiguration.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AppDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CodeGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/CodeGenerator.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MainForm.cs" beforeDir="false" afterPath="$PROJECT_DIR$/MainForm.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Product.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Product.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SettingsDialog.cs" beforeDir="false" afterPath="$PROJECT_DIR$/SettingsDialog.cs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -64,61 +72,61 @@
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000000000176688" />
-      <entry key="MS500" value="1.0070722631879947" />
-      <entry key="S2" value="1.3806812030173348" />
-      <entry key="S5" value="2.6777091093088163" />
-      <entry key="S10" value="5.169163800291608" />
-      <entry key="S30" value="12.564517805257218" />
-      <entry key="S60" value="18.22266292427399" />
-      <entry key="M2" value="24.374991303667116" />
-      <entry key="M5" value="34.99089369623927" />
-      <entry key="M10" value="50.90517908087166" />
-      <entry key="M15" value="68.77581109479151" />
-      <entry key="M30" value="120.87979326697184" />
-      <entry key="H1" value="187.67163460302348" />
-      <entry key="H2" value="246.42856079168743" />
-      <entry key="H4" value="314.6894811988623" />
-      <entry key="D1" value="975.0537001639634" />
-      <entry key="W1" value="1487.5004329081864" />
+      <entry key="MS100" value="1.0180487015201027" />
+      <entry key="MS500" value="1.949765307155757" />
+      <entry key="S2" value="3.5469947514012783" />
+      <entry key="S5" value="5.694355969088916" />
+      <entry key="S10" value="8.356814556483304" />
+      <entry key="S30" value="12.057468584908234" />
+      <entry key="S60" value="13.483619462597796" />
+      <entry key="M2" value="15.436780105492405" />
+      <entry key="M5" value="25.558915982238222" />
+      <entry key="M10" value="45.15688086775956" />
+      <entry key="M15" value="63.5817645619752" />
+      <entry key="M30" value="116.20307315404568" />
+      <entry key="H1" value="197.40132819440427" />
+      <entry key="H2" value="282.37215014830235" />
+      <entry key="H4" value="371.8673975394283" />
+      <entry key="D1" value="1052.3360288462065" />
+      <entry key="W1" value="1580.9964435305703" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="0.0" />
-      <entry key="S2" value="0.0" />
-      <entry key="S5" value="9.928426971858997E-223" />
-      <entry key="S10" value="9.96414922201534E-112" />
-      <entry key="S30" value="9.988035436190438E-38" />
-      <entry key="S60" value="3.160541542830019E-19" />
-      <entry key="M2" value="5.718255565319203E-10" />
-      <entry key="M5" value="3.218610651502032E-4" />
-      <entry key="M10" value="0.043199506042435214" />
-      <entry key="M15" value="0.23902045958583315" />
-      <entry key="M30" value="1.3651290546999613" />
-      <entry key="H1" value="3.295637988042422" />
-      <entry key="H2" value="5.296992731113547" />
-      <entry key="H4" value="10.54412569209948" />
-      <entry key="D1" value="76.79959158097793" />
-      <entry key="W1" value="121.95993603259268" />
+      <entry key="MS100" value="8.533477E-318" />
+      <entry key="MS500" value="3.8567832594949305E-64" />
+      <entry key="S2" value="1.401381268930764E-16" />
+      <entry key="S5" value="4.5564071358342826E-7" />
+      <entry key="S10" value="6.750116395910725E-4" />
+      <entry key="S30" value="0.0877210363565578" />
+      <entry key="S60" value="0.29617841205102663" />
+      <entry key="M2" value="0.5470024822687961" />
+      <entry key="M5" value="1.1116307385840043" />
+      <entry key="M10" value="2.503948974649565" />
+      <entry key="M15" value="3.7081798319293924" />
+      <entry key="M30" value="6.156521852877614" />
+      <entry key="H1" value="9.108537993301889" />
+      <entry key="H2" value="12.119177534162162" />
+      <entry key="H4" value="17.78731438506415" />
+      <entry key="D1" value="84.13147254025384" />
+      <entry key="W1" value="130.58574855478048" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9659363289419125" />
-      <entry key="MS500" value="1.00011590640745" />
-      <entry key="S2" value="1.378276253617107" />
-      <entry key="S5" value="2.675789051320225" />
-      <entry key="S10" value="5.167271676440609" />
-      <entry key="S30" value="12.562932392689461" />
-      <entry key="S60" value="18.221483590605487" />
-      <entry key="M2" value="24.37417559643071" />
-      <entry key="M5" value="34.99068457313462" />
-      <entry key="M10" value="50.94737348607572" />
-      <entry key="M15" value="69.01216623855183" />
-      <entry key="M30" value="122.23745104961445" />
-      <entry key="H1" value="190.95795569967632" />
-      <entry key="H2" value="251.71808355491422" />
-      <entry key="H4" value="325.22801202484777" />
-      <entry key="D1" value="1051.8494882853108" />
-      <entry key="W1" value="1609.4595426491276" />
+      <entry key="MS100" value="1.0036821547247758" />
+      <entry key="MS500" value="1.9411440149402723" />
+      <entry key="S2" value="3.5424562644739446" />
+      <entry key="S5" value="5.691135239195507" />
+      <entry key="S10" value="8.35479081794457" />
+      <entry key="S30" value="12.13569227474169" />
+      <entry key="S60" value="13.764852334650083" />
+      <entry key="M2" value="15.970117214795302" />
+      <entry key="M5" value="26.661529416386013" />
+      <entry key="M10" value="47.65353205529217" />
+      <entry key="M15" value="67.28331408180588" />
+      <entry key="M30" value="122.35251863605976" />
+      <entry key="H1" value="206.5016147026396" />
+      <entry key="H2" value="294.48407862552455" />
+      <entry key="H4" value="389.6490229569373" />
+      <entry key="D1" value="1136.463645841051" />
+      <entry key="W1" value="1711.5813494964418" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -154,14 +162,23 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "configurable.group.language",
-    "vue.rearranger.settings.migration": "true"
+    "vue.rearranger.settings.migration": "true",
+    "发布到文件夹.win-x86.executor": "Run"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected=".NET 项目.HansLaserDateSerialDemo">
+    <configuration name="win-x86" type="DotNetFolderPublish" factoryName="Publish to folder">
+      <riderPublish delete_existing_files="true" target_folder="$PROJECT_DIR$/bin/net10.0-windows/win-x86/publish" target_framework="net10.0-windows" uuid_high="1568304527525328171" uuid_low="4456964712905359096">
+        <runtimes>
+          <item value="win-x86" />
+        </runtimes>
+      </riderPublish>
+      <method v="2" />
+    </configuration>
     <configuration name="HansLaserDateSerialDemo" type="DotNetProject" factoryName=".NET Project">
-      <option name="EXE_PATH" value="" />
+      <option name="EXE_PATH" value="$PROJECT_DIR$/bin/Debug/net10.0-windows/HansLaserDateSerialDemo.exe" />
       <option name="PROGRAM_PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bin/Debug/net10.0-windows" />
       <option name="PASS_PARENT_ENVS" value="1" />
       <option name="ENV_FILE_PATHS" value="" />
       <option name="REDIRECT_INPUT_PATH" value="" />
@@ -174,11 +191,15 @@
       <option name="PROJECT_ARGUMENTS_TRACKING" value="1" />
       <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="1" />
       <option name="PROJECT_KIND" value="DotNetCore" />
-      <option name="PROJECT_TFM" value="" />
+      <option name="PROJECT_TFM" value="net10.0-windows" />
       <method v="2">
         <option name="Build" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue=".NET 项目.HansLaserDateSerialDemo" />
+      <item itemvalue="发布到文件夹.win-x86" />
+    </list>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="默认任务">

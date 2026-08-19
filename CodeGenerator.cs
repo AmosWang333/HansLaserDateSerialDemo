@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HansLaserDateSerialDemo
 {
-    internal static class CodeGeneratorTypes
+    public sealed class CodeGeneratorTypes
     {
         public const string Normal = "Normal";
         public const string EcoFlow = "EcoFlow";
