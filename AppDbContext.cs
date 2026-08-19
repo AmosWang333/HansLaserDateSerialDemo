@@ -34,7 +34,8 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<MarkingRecord>()
-            .HasIndex(record => new { record.ProductId, record.Code });
+            .HasIndex(record => record.Code)
+            .IsUnique();
 
         modelBuilder.Entity<MarkingRecord>()
             .HasOne(record => record.Product)
@@ -126,14 +127,33 @@ public class AppDbContext : DbContext
             @"CREATE UNIQUE INDEX IF NOT EXISTS IX_ProductSequenceStates_ProductId
                 ON ProductSequenceStates (ProductId)");
         Database.ExecuteSqlRaw(
-            @"CREATE INDEX IF NOT EXISTS IX_MarkingRecords_ProductId_Code
-                ON MarkingRecords (ProductId, Code)");
+            @"DROP INDEX IF EXISTS IX_MarkingRecords_ProductId_Code");
+        EnsureNoDuplicateMarkingRecordCodes();
+        Database.ExecuteSqlRaw(
+            @"CREATE UNIQUE INDEX IF NOT EXISTS IX_MarkingRecords_Code
+                ON MarkingRecords (Code)");
         Database.ExecuteSqlRaw(
             @"CREATE INDEX IF NOT EXISTS IX_MarkingRecords_ProductId
                 ON MarkingRecords (ProductId)");
         Database.ExecuteSqlRaw(
             @"CREATE INDEX IF NOT EXISTS IX_ProductSequenceStates_PendingRecordId
                 ON ProductSequenceStates (PendingRecordId)");
+    }
+
+    private void EnsureNoDuplicateMarkingRecordCodes()
+    {
+        string duplicateCode = Database.SqlQueryRaw<string>(
+                @"SELECT Code
+                  FROM MarkingRecords
+                  WHERE Code IS NOT NULL
+                  GROUP BY Code
+                  HAVING COUNT(*) > 1
+                  LIMIT 1")
+            .AsEnumerable()
+            .FirstOrDefault();
+
+        if (duplicateCode != null)
+            throw new InvalidOperationException($"MarkingRecords.Code 存在重复值，无法创建唯一索引：{duplicateCode}");
     }
 
     private void EnsureColumn(string tableName, string columnName, string columnDefinition)

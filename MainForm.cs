@@ -663,19 +663,11 @@ namespace HansLaserDateSerialDemo
                         using (AppDbContext dbContext = new AppDbContext())
                         {
                             dbContext.EnsureDatabase();
-                            dbContext.MarkingRecords.Add(new MarkingRecord
-                            {
-                                ProductId = source.ProductId,
-                                Code = source.Code,
-                                Serial = source.Serial,
-                                BusinessDate = source.BusinessDate.Date,
-                                State = MarkingRecordStates.Reprinted,
-                                CreatedAt = now,
-                                MarkedAt = now,
-                                UpdatedAt = now,
-                                SourceRecordId = source.Id,
-                                Remark = "历史编号重新打标"
-                            });
+                            MarkingRecord record = dbContext.MarkingRecords.Single(item => item.Id == source.Id);
+                            record.State = MarkingRecordStates.Reprinted;
+                            record.MarkedAt = now;
+                            record.UpdatedAt = now;
+                            record.Remark = AppendRemark(record.Remark, "历史编号重新打标");
                             dbContext.SaveChanges();
                         }
 
@@ -707,6 +699,15 @@ namespace HansLaserDateSerialDemo
                         _api.SetVariableText(_configuration.VariableTextAlias, _reservation.Code);
                 }
             });
+        }
+
+        private static string AppendRemark(string currentRemark, string newRemark)
+        {
+            string timestampedRemark = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {newRemark}";
+            if (string.IsNullOrWhiteSpace(currentRemark))
+                return timestampedRemark;
+
+            return currentRemark + Environment.NewLine + timestampedRemark;
         }
 
         private void ReserveAndDisplayCurrent()

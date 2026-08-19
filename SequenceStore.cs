@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace HansLaserDateSerialDemo
@@ -86,7 +87,15 @@ namespace HansLaserDateSerialDemo
                         };
 
                         dbContext.MarkingRecords.Add(record);
-                        dbContext.SaveChanges();
+                        try
+                        {
+                            dbContext.SaveChanges();
+                        }
+                        catch (DbUpdateException ex) when (IsUniqueCodeViolation(ex))
+                        {
+                            throw new InvalidOperationException(
+                                $"编号已存在，无法占用新编号：{code}。请检查产品编码前缀、日期和流水号起始值。", ex);
+                        }
 
                         state.PendingRecordId = record.Id;
                         state.NextSerial = serial + 1;
@@ -181,6 +190,13 @@ namespace HansLaserDateSerialDemo
             if (value > 9999)
                 return 9999;
             return value;
+        }
+
+        private static bool IsUniqueCodeViolation(DbUpdateException ex)
+        {
+            return ex.InnerException is SqliteException sqliteException &&
+                   sqliteException.SqliteErrorCode == 19 &&
+                   sqliteException.Message.Contains("MarkingRecords.Code", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
