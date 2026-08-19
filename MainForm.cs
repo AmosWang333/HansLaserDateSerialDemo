@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Reflection;
 
 namespace HansLaserDateSerialDemo
 {
@@ -34,7 +35,7 @@ namespace HansLaserDateSerialDemo
 
         public MainForm()
         {
-            Text = "激光打标应用";
+            Text = $@"激光打标应用 v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}";
             StartPosition = FormStartPosition.CenterScreen;
             MinimumSize = new Size(980, 680);
             Size = new Size(1080, 720);
