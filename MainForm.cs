@@ -362,10 +362,12 @@ namespace HansLaserDateSerialDemo
                 if (string.IsNullOrEmpty(errorMessage))
                     return;
 
+                var messageBoxButtons =
+                    errorMessage.Contains("dll") ? MessageBoxButtons.RetryCancel : MessageBoxButtons.OK;
                 DialogResult result = MessageBox.Show(
                     $"启动失败：{errorMessage}",
                     "启动",
-                    MessageBoxButtons.RetryCancel,
+                    messageBoxButtons,
                     MessageBoxIcon.Error,
                     MessageBoxDefaultButton.Button1);
 
@@ -556,18 +558,12 @@ namespace HansLaserDateSerialDemo
                     }
 
                     AuditLog.Append(AuditFile, "MARK_NOT_NORMAL", reservation.Code, detail);
-                    BeginInvoke(new Action(delegate
-                    {
-                        Log($"打标未正常完成：{status}。编号仍处于待确认状态。");
-                    }));
+                    BeginInvoke(new Action(delegate { Log($"打标未正常完成：{status}。编号仍处于待确认状态。"); }));
                 }
                 catch (Exception ex)
                 {
                     AuditLog.Append(AuditFile, "MARK_ERROR", reservation.Code, ex.Message);
-                    BeginInvoke(new Action(delegate
-                    {
-                        Log($"打标调用异常：{ex.Message}");
-                    }));
+                    BeginInvoke(new Action(delegate { Log($"打标调用异常：{ex.Message}"); }));
                 }
             });
         }
@@ -667,19 +663,13 @@ namespace HansLaserDateSerialDemo
                     else
                     {
                         AuditLog.Append(AuditFile, "REPRINT_NOT_NORMAL", source.Code, detail);
-                        BeginInvoke(new Action(delegate
-                        {
-                            Log($"历史编号重新打标未正常完成：{status}");
-                        }));
+                        BeginInvoke(new Action(delegate { Log($"历史编号重新打标未正常完成：{status}"); }));
                     }
                 }
                 catch (Exception ex)
                 {
                     AuditLog.Append(AuditFile, "REPRINT_ERROR", source.Code, ex.Message);
-                    BeginInvoke(new Action(delegate
-                    {
-                        Log($"历史编号重新打标异常：{ex.Message}");
-                    }));
+                    BeginInvoke(new Action(delegate { Log($"历史编号重新打标异常：{ex.Message}"); }));
                 }
                 finally
                 {
