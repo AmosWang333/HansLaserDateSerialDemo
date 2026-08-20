@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace HansLaserDateSerialDemo
@@ -16,8 +14,6 @@ namespace HansLaserDateSerialDemo
 
     internal sealed class SettingsDialog : Form
     {
-        private const string ProductActionColumnName = "ProductActions";
-
         private readonly TextBox _machinePathTextBox;
         private readonly TextBox _variableTextAliasTextBox;
         private readonly ComboBox _productComboBox;
@@ -25,14 +21,11 @@ namespace HansLaserDateSerialDemo
         private readonly NumericUpDown _footPedalTimeoutSeconds;
         private readonly Label _dllVersionLabel;
         private readonly DataGridView _productsGrid;
+        private readonly Button _editProductButton;
+        private readonly Button _deleteProductButton;
         private readonly SettingsPage _initialPage;
 
         private List<Product> _products = new List<Product>();
-        private readonly SvgPathIcon _editIcon = new SvgPathIcon("M4 20l4-1 11-11-3-3L5 16l-1 4M14 5l3 3");
-
-        private readonly SvgPathIcon _deleteIcon =
-            new SvgPathIcon(
-                "m5 6l.876 13.133A2 2 0 0 0 7.87 21h8.258a2 2 0 0 0 1.995-1.867L19 6M8 6l.772-2.316A1 1 0 0 1 9.721 3h4.558a1 1 0 0 1 .949.684L16 6m-6 5v5m4-5v5M4 6h16");
 
         public AppConfiguration Configuration { get; private set; }
 
@@ -145,28 +138,8 @@ namespace HansLaserDateSerialDemo
                 RowCount = 2,
                 Padding = new Padding(4)
             };
-            productsRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
             productsRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-
-            FlowLayoutPanel productToolbar = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false,
-                Margin = Padding.Empty,
-                Padding = Padding.Empty
-            };
-            productsRoot.Controls.Add(productToolbar, 0, 0);
-
-            Button addProductButton = new Button
-            {
-                Width = 90,
-                Height = 26,
-                Margin = new Padding(0, 0, 0, 4),
-                Text = "新增"
-            };
-            addProductButton.Click += delegate { OpenProductEditor(null); };
-            productToolbar.Controls.Add(addProductButton);
+            productsRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
 
             _productsGrid = new DataGridView
             {
@@ -182,46 +155,55 @@ namespace HansLaserDateSerialDemo
                 ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing
             };
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "名称", DataPropertyName = "Name", Width = 130 });
+                { HeaderText = "名称", DataPropertyName = "Name", Width = 150 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 130 });
+                { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 150 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 75 });
+                { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 90 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "起始流水", DataPropertyName = "SerialStartValue", Width = 75 });
+                { HeaderText = "起始流水", DataPropertyName = "SerialStartValue", Width = 90 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "生成器", DataPropertyName = "CodeGeneratorType", Width = 90 });
+                { HeaderText = "生成器", DataPropertyName = "CodeGeneratorType", Width = 100 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "模板", DataPropertyName = "TemplatePath",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 80
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 150
             });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 80 });
-            _productsGrid.Columns.Add(new DataGridViewButtonColumn
-            {
-                Name = ProductActionColumnName,
-                HeaderText = string.Empty,
-                UseColumnTextForButtonValue = false,
-                Width = 64,
-                MinimumWidth = 64,
-                Resizable = DataGridViewTriState.False
-            });
-            _productsGrid.CellMouseClick += delegate(object sender, DataGridViewCellMouseEventArgs e)
-            {
-                HandleProductActionCellClick(e);
-            };
+                { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 100 });
             _productsGrid.CellDoubleClick += delegate(object sender, DataGridViewCellEventArgs e)
             {
-                if (e.RowIndex >= 0 && !IsProductActionColumn(e.ColumnIndex))
+                if (e.RowIndex >= 0)
                     OpenProductEditorAtRow(e.RowIndex);
             };
-            _productsGrid.CellPainting += PaintProductActionIcon;
+            _productsGrid.SelectionChanged += delegate { UpdateProductActionButtons(); };
             _productsGrid.DataError += delegate(object sender, DataGridViewDataErrorEventArgs e)
             {
                 e.ThrowException = false;
             };
-            productsRoot.Controls.Add(_productsGrid, 0, 1);
+            productsRoot.Controls.Add(_productsGrid, 0, 0);
+
+            FlowLayoutPanel productButtons = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = false,
+                Margin = Padding.Empty,
+                Padding = new Padding(0, 8, 0, 0)
+            };
+            productsRoot.Controls.Add(productButtons, 0, 1);
+
+            _deleteProductButton = new Button { Width = 90, Height = 30, Text = "删除" };
+            _deleteProductButton.Click += delegate { DeleteSelectedProduct(); };
+            productButtons.Controls.Add(_deleteProductButton);
+
+            _editProductButton = new Button { Width = 90, Height = 30, Text = "编辑" };
+            _editProductButton.Click += delegate { OpenSelectedProductEditor(); };
+            productButtons.Controls.Add(_editProductButton);
+
+            Button addProductButton = new Button { Width = 90, Height = 30, Text = "新增" };
+            addProductButton.Click += delegate { OpenProductEditor(null); };
+            productButtons.Controls.Add(addProductButton);
 
             FlowLayoutPanel buttons = new FlowLayoutPanel
             {
@@ -458,59 +440,14 @@ namespace HansLaserDateSerialDemo
             _productsGrid.DataSource = _products;
             if (_products.Count == 0)
                 _productsGrid.ClearSelection();
+            UpdateProductActionButtons();
         }
 
-        private void PaintProductActionIcon(object sender, DataGridViewCellPaintingEventArgs e)
+        private void UpdateProductActionButtons()
         {
-            if (e.RowIndex < 0 || !IsProductActionColumn(e.ColumnIndex))
-                return;
-
-            e.Paint(e.CellBounds, DataGridViewPaintParts.Background | DataGridViewPaintParts.Border);
-
-            GetProductActionIconBounds(e.CellBounds, out Rectangle editBounds, out Rectangle deleteBounds);
-            _editIcon.Draw(e.Graphics, editBounds, Color.FromArgb(45, 95, 170));
-            _deleteIcon.Draw(e.Graphics, deleteBounds, Color.FromArgb(180, 60, 55));
-            e.Handled = true;
-        }
-
-        private void HandleProductActionCellClick(DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex < 0 || !IsProductActionColumn(e.ColumnIndex))
-                return;
-
-            Rectangle cellBounds = _productsGrid.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
-            GetProductActionIconBounds(cellBounds, out Rectangle editBounds, out Rectangle deleteBounds);
-            Point clickPoint = new Point(cellBounds.Left + e.X, cellBounds.Top + e.Y);
-
-            if (deleteBounds.Contains(clickPoint))
-            {
-                BeginInvoke(new Action(delegate { DeleteProductAtRow(e.RowIndex); }));
-                return;
-            }
-
-            if (editBounds.Contains(clickPoint))
-                OpenProductEditorAtRow(e.RowIndex);
-        }
-
-        private bool IsProductActionColumn(int columnIndex)
-        {
-            return columnIndex >= 0 &&
-                   columnIndex < _productsGrid.Columns.Count &&
-                   string.Equals(_productsGrid.Columns[columnIndex].Name, ProductActionColumnName,
-                       StringComparison.Ordinal);
-        }
-
-        private static void GetProductActionIconBounds(Rectangle cellBounds, out Rectangle editBounds,
-            out Rectangle deleteBounds)
-        {
-            int iconSize = 18;
-            int gap = 10;
-            int totalWidth = iconSize * 2 + gap;
-            int left = cellBounds.Left + Math.Max(0, (cellBounds.Width - totalWidth) / 2);
-            int top = cellBounds.Top + Math.Max(0, (cellBounds.Height - iconSize) / 2);
-
-            editBounds = new Rectangle(left, top, iconSize, iconSize);
-            deleteBounds = new Rectangle(left + iconSize + gap, top, iconSize, iconSize);
+            bool hasSelection = GetSelectedProductRowIndex() >= 0;
+            _editProductButton.Enabled = hasSelection;
+            _deleteProductButton.Enabled = hasSelection;
         }
 
         private void OpenProductEditorAtRow(int rowIndex)
@@ -519,6 +456,13 @@ namespace HansLaserDateSerialDemo
                 return;
 
             OpenProductEditor(_products[rowIndex]);
+        }
+
+        private void OpenSelectedProductEditor()
+        {
+            int rowIndex = GetSelectedProductRowIndex();
+            if (rowIndex >= 0)
+                OpenProductEditorAtRow(rowIndex);
         }
 
         private void OpenProductEditor(Product source)
@@ -568,6 +512,22 @@ namespace HansLaserDateSerialDemo
             }
 
             RemoveProductFromGrid(product, 0);
+        }
+
+        private void DeleteSelectedProduct()
+        {
+            int rowIndex = GetSelectedProductRowIndex();
+            if (rowIndex >= 0)
+                DeleteProductAtRow(rowIndex);
+        }
+
+        private int GetSelectedProductRowIndex()
+        {
+            if (_productsGrid.CurrentRow == null)
+                return -1;
+
+            int rowIndex = _productsGrid.CurrentRow.Index;
+            return rowIndex >= 0 && rowIndex < _products.Count ? rowIndex : -1;
         }
 
         private void RemoveProductFromGrid(Product product, int selectedProductId)
@@ -1048,146 +1008,5 @@ namespace HansLaserDateSerialDemo
             }
         }
 
-        private sealed class SvgPathIcon
-        {
-            private static readonly Regex TokenRegex =
-                new Regex(@"[A-Za-z]|[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?", RegexOptions.Compiled);
-
-            private readonly string _pathData;
-
-            public SvgPathIcon(string pathData)
-            {
-                _pathData = pathData;
-            }
-
-            public void Draw(Graphics graphics, Rectangle bounds, Color color)
-            {
-                using (GraphicsPath path = BuildPath())
-                using (Matrix matrix = new Matrix())
-                using (Pen pen = new Pen(color, 2F)
-                       {
-                           StartCap = LineCap.Round,
-                           EndCap = LineCap.Round,
-                           LineJoin = LineJoin.Round
-                       })
-                {
-                    matrix.Translate(bounds.Left, bounds.Top);
-                    matrix.Scale(bounds.Width / 24F, bounds.Height / 24F);
-
-                    GraphicsState state = graphics.Save();
-                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    graphics.Transform = matrix;
-                    graphics.DrawPath(pen, path);
-                    graphics.Restore(state);
-                }
-            }
-
-            private GraphicsPath BuildPath()
-            {
-                List<string> tokens = TokenRegex.Matches(_pathData)
-                    .Cast<Match>()
-                    .Select(match => match.Value)
-                    .ToList();
-
-                GraphicsPath path = new GraphicsPath();
-                PointF current = PointF.Empty;
-                PointF figureStart = PointF.Empty;
-                char command = '\0';
-                int index = 0;
-
-                while (index < tokens.Count)
-                {
-                    if (IsCommand(tokens[index]))
-                    {
-                        command = tokens[index][0];
-                        index++;
-                    }
-
-                    switch (command)
-                    {
-                        case 'M':
-                        case 'm':
-                            current = ReadPoint(tokens, ref index, current, command == 'm');
-                            figureStart = current;
-                            path.StartFigure();
-                            command = command == 'm' ? 'l' : 'L';
-                            break;
-                        case 'L':
-                        case 'l':
-                            AddLine(path, ref current, ReadPoint(tokens, ref index, current, command == 'l'));
-                            break;
-                        case 'H':
-                        case 'h':
-                            AddLine(path, ref current, new PointF(
-                                command == 'h'
-                                    ? current.X + ReadNumber(tokens, ref index)
-                                    : ReadNumber(tokens, ref index),
-                                current.Y));
-                            break;
-                        case 'V':
-                        case 'v':
-                            AddLine(path, ref current, new PointF(
-                                current.X,
-                                command == 'v'
-                                    ? current.Y + ReadNumber(tokens, ref index)
-                                    : ReadNumber(tokens, ref index)));
-                            break;
-                        case 'A':
-                        case 'a':
-                            SkipArcArgumentsAndLineToEnd(path, tokens, ref index, ref current, command == 'a');
-                            break;
-                        case 'Z':
-                        case 'z':
-                            AddLine(path, ref current, figureStart);
-                            path.CloseFigure();
-                            break;
-                        default:
-                            index++;
-                            break;
-                    }
-                }
-
-                return path;
-            }
-
-            private static void SkipArcArgumentsAndLineToEnd(
-                GraphicsPath path,
-                List<string> tokens,
-                ref int index,
-                ref PointF current,
-                bool relative)
-            {
-                ReadNumber(tokens, ref index);
-                ReadNumber(tokens, ref index);
-                ReadNumber(tokens, ref index);
-                ReadNumber(tokens, ref index);
-                ReadNumber(tokens, ref index);
-                PointF end = ReadPoint(tokens, ref index, current, relative);
-                AddLine(path, ref current, end);
-            }
-
-            private static PointF ReadPoint(List<string> tokens, ref int index, PointF current, bool relative)
-            {
-                float x = ReadNumber(tokens, ref index);
-                float y = ReadNumber(tokens, ref index);
-                return relative ? new PointF(current.X + x, current.Y + y) : new PointF(x, y);
-            }
-
-            private static float ReadNumber(List<string> tokens, ref int index)
-            {
-                return float.Parse(tokens[index++], System.Globalization.CultureInfo.InvariantCulture);
-            }
-
-            private static void AddLine(GraphicsPath path, ref PointF current, PointF next)
-            {
-                path.AddLine(current, next);
-                current = next;
-            }
-
-            private static bool IsCommand(string token)
-            {
-                return token.Length == 1 && char.IsLetter(token[0]);
-            }
-        }
     }
 }
