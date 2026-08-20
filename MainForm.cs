@@ -45,7 +45,8 @@ namespace HansLaserDateSerialDemo
                 ColumnCount = 1,
                 RowCount = 2,
                 Margin = Padding.Empty,
-                Padding = Padding.Empty
+                Padding = Padding.Empty,
+                BackColor = Color.White
             };
             shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
@@ -57,7 +58,8 @@ namespace HansLaserDateSerialDemo
                 Dock = DockStyle.Fill,
                 AutoSize = true,
                 Margin = Padding.Empty,
-                Padding = new Padding(4, 2, 0, 2)
+                Padding = new Padding(4, 2, 0, 2),
+                BackColor = Color.White
             };
             _settingsMenuItem = new ToolStripMenuItem("设置")
             {
