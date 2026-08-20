@@ -16,6 +16,8 @@ namespace HansLaserDateSerialDemo
 
     internal sealed class SettingsDialog : Form
     {
+        private const string ProductActionColumnName = "ProductActions";
+
         private readonly TextBox _machinePathTextBox;
         private readonly TextBox _variableTextAliasTextBox;
         private readonly ComboBox _productComboBox;
@@ -23,19 +25,10 @@ namespace HansLaserDateSerialDemo
         private readonly NumericUpDown _footPedalTimeoutSeconds;
         private readonly Label _dllVersionLabel;
         private readonly DataGridView _productsGrid;
-        private readonly TextBox _productNameTextBox;
-        private readonly TextBox _customerPartNumberTextBox;
-        private readonly NumericUpDown _shipcodeBox;
-        private readonly NumericUpDown _serialStartValueBox;
-        private readonly ComboBox _productCodeGeneratorComboBox;
-        private readonly TextBox _productTemplatePathTextBox;
-        private readonly TextBox _productPatternTextBox;
         private readonly SettingsPage _initialPage;
 
         private List<Product> _products = new List<Product>();
-        private Product _editingProduct;
-        private bool _refreshingProductsGrid;
-        private readonly SvgPathIcon _addIcon = new SvgPathIcon("M5 12h14m-7 7V5");
+        private readonly SvgPathIcon _editIcon = new SvgPathIcon("M4 20l4-1 11-11-3-3L5 16l-1 4M14 5l3 3");
 
         private readonly SvgPathIcon _deleteIcon =
             new SvgPathIcon(
@@ -74,7 +67,8 @@ namespace HansLaserDateSerialDemo
                 Padding = new Padding(14)
             };
             shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));
+            shell.RowStyles.Add(new RowStyle(SizeType.Absolute,
+                initialPage == SettingsPage.ProductConfiguration ? 0 : 56));
             Controls.Add(shell);
 
             FlowLayoutPanel settingsRoot = CreateVerticalFlow();
@@ -149,10 +143,30 @@ namespace HansLaserDateSerialDemo
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
                 RowCount = 2,
-                Padding = new Padding(10)
+                Padding = new Padding(4)
             };
+            productsRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
             productsRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            productsRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 380));
+
+            FlowLayoutPanel productToolbar = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+            productsRoot.Controls.Add(productToolbar, 0, 0);
+
+            Button addProductButton = new Button
+            {
+                Width = 90,
+                Height = 26,
+                Margin = new Padding(0, 0, 0, 4),
+                Text = "新增"
+            };
+            addProductButton.Click += delegate { OpenProductEditor(null); };
+            productToolbar.Controls.Add(addProductButton);
 
             _productsGrid = new DataGridView
             {
@@ -163,98 +177,51 @@ namespace HansLaserDateSerialDemo
                 MultiSelect = false,
                 ReadOnly = true,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                RowHeadersVisible = false
+                RowHeadersVisible = false,
+                ColumnHeadersHeight = 28,
+                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing
             };
-            _productsGrid.Columns.Add(new DataGridViewButtonColumn
-                { HeaderText = "新增", UseColumnTextForButtonValue = false, Width = 36 });
-            _productsGrid.Columns.Add(new DataGridViewButtonColumn
-                { HeaderText = "删除", UseColumnTextForButtonValue = false, Width = 36 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "名称", DataPropertyName = "Name", Width = 150 });
+                { HeaderText = "名称", DataPropertyName = "Name", Width = 130 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 150 });
+                { HeaderText = "客户料号", DataPropertyName = "CustomerPartNumber", Width = 130 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 90 });
+                { HeaderText = "Shipcode", DataPropertyName = "Shipcode", Width = 75 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "起始流水", DataPropertyName = "SerialStartValue", Width = 90 });
+                { HeaderText = "起始流水", DataPropertyName = "SerialStartValue", Width = 75 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "生成器", DataPropertyName = "CodeGeneratorType", Width = 100 });
+                { HeaderText = "生成器", DataPropertyName = "CodeGeneratorType", Width = 90 });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "模板", DataPropertyName = "TemplatePath",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 150
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 80
             });
             _productsGrid.Columns.Add(new DataGridViewTextBoxColumn
-                { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 100 });
-            _productsGrid.CellContentClick += delegate(object sender, DataGridViewCellEventArgs e)
+                { HeaderText = "Pattern", DataPropertyName = "Pattern", Width = 80 });
+            _productsGrid.Columns.Add(new DataGridViewButtonColumn
             {
-                if (e.RowIndex >= 0 && e.ColumnIndex == 0)
-                    AddProductRow();
-                else if (e.RowIndex >= 0 && e.ColumnIndex == 1)
-                    BeginInvoke(new Action(delegate { DeleteProductAtRow(e.RowIndex); }));
+                Name = ProductActionColumnName,
+                HeaderText = string.Empty,
+                UseColumnTextForButtonValue = false,
+                Width = 64,
+                MinimumWidth = 64,
+                Resizable = DataGridViewTriState.False
+            });
+            _productsGrid.CellMouseClick += delegate(object sender, DataGridViewCellMouseEventArgs e)
+            {
+                HandleProductActionCellClick(e);
+            };
+            _productsGrid.CellDoubleClick += delegate(object sender, DataGridViewCellEventArgs e)
+            {
+                if (e.RowIndex >= 0 && !IsProductActionColumn(e.ColumnIndex))
+                    OpenProductEditorAtRow(e.RowIndex);
             };
             _productsGrid.CellPainting += PaintProductActionIcon;
             _productsGrid.DataError += delegate(object sender, DataGridViewDataErrorEventArgs e)
             {
                 e.ThrowException = false;
             };
-            _productsGrid.SelectionChanged += delegate
-            {
-                if (!_refreshingProductsGrid)
-                    LoadSelectedProductForEdit();
-            };
-            productsRoot.Controls.Add(_productsGrid, 0, 0);
-
-            GroupBox editorBox = new GroupBox
-            {
-                Dock = DockStyle.Fill,
-                Text = "产品信息",
-                Margin = new Padding(0, 10, 0, 0)
-            };
-            productsRoot.Controls.Add(editorBox, 0, 1);
-
-            TableLayoutPanel editorRoot = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 1,
-                RowCount = 2
-            };
-            editorRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            editorRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 46));
-            editorBox.Controls.Add(editorRoot);
-
-            TableLayoutPanel editorGrid = CreateFormGrid(7);
-            editorGrid.ColumnStyles[0].Width = 110;
-            editorRoot.Controls.Add(editorGrid, 0, 0);
-
-            _productNameTextBox = AddSettingTextBox(editorGrid, 0, "名称");
-            _customerPartNumberTextBox = AddSettingTextBox(editorGrid, 1, "客户料号");
-            _shipcodeBox = AddNumericSetting(editorGrid, 2, "Shipcode");
-            _serialStartValueBox = AddNumericSetting(editorGrid, 3, "起始流水");
-            _serialStartValueBox.Minimum = 1;
-            _serialStartValueBox.Maximum = 9999;
-            _productCodeGeneratorComboBox = AddComboBox(editorGrid, 4, "生成器");
-            _productCodeGeneratorComboBox.Items.Add(CodeGeneratorTypes.EcoFlow);
-            _productCodeGeneratorComboBox.Items.Add(CodeGeneratorTypes.Normal);
-            _productTemplatePathTextBox = AddPathSettingTextBox(
-                editorGrid,
-                5,
-                "打标模板",
-                delegate(TextBox textBox) { BrowseFile(textBox, "选择打标模板", "打标模板 (*.HS)|*.HS|所有文件 (*.*)|*.*"); });
-            _productPatternTextBox = AddSettingTextBox(editorGrid, 6, "Pattern");
-
-            FlowLayoutPanel productButtons = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false,
-                Padding = new Padding(0, 6, 12, 0)
-            };
-            editorRoot.Controls.Add(productButtons, 0, 1);
-
-            Button saveProductButton = new Button { Width = 90, Height = 30, Text = "保存" };
-            saveProductButton.Click += delegate { SaveProduct(); };
-            productButtons.Controls.Add(saveProductButton);
+            productsRoot.Controls.Add(_productsGrid, 0, 1);
 
             FlowLayoutPanel buttons = new FlowLayoutPanel
             {
@@ -487,71 +454,83 @@ namespace HansLaserDateSerialDemo
 
         private void RefreshProductsGrid()
         {
-            _refreshingProductsGrid = true;
-            try
-            {
-                _productsGrid.DataSource = null;
-                _productsGrid.DataSource = _products;
-                if (_products.Count == 0)
-                    _productsGrid.ClearSelection();
-            }
-            finally
-            {
-                _refreshingProductsGrid = false;
-            }
+            _productsGrid.DataSource = null;
+            _productsGrid.DataSource = _products;
+            if (_products.Count == 0)
+                _productsGrid.ClearSelection();
         }
 
         private void PaintProductActionIcon(object sender, DataGridViewCellPaintingEventArgs e)
         {
-            if (e.RowIndex < 0 || (e.ColumnIndex != 0 && e.ColumnIndex != 1))
+            if (e.RowIndex < 0 || !IsProductActionColumn(e.ColumnIndex))
                 return;
 
             e.Paint(e.CellBounds, DataGridViewPaintParts.Background | DataGridViewPaintParts.Border);
 
-            Rectangle iconBounds = new Rectangle(
-                e.CellBounds.Left + (e.CellBounds.Width - 20) / 2,
-                e.CellBounds.Top + (e.CellBounds.Height - 20) / 2,
-                20,
-                20);
-
-            Color color = e.ColumnIndex == 0
-                ? Color.FromArgb(35, 120, 70)
-                : Color.FromArgb(180, 60, 55);
-            SvgPathIcon icon = e.ColumnIndex == 0 ? _addIcon : _deleteIcon;
-            icon.Draw(e.Graphics, iconBounds, color);
+            GetProductActionIconBounds(e.CellBounds, out Rectangle editBounds, out Rectangle deleteBounds);
+            _editIcon.Draw(e.Graphics, editBounds, Color.FromArgb(45, 95, 170));
+            _deleteIcon.Draw(e.Graphics, deleteBounds, Color.FromArgb(180, 60, 55));
             e.Handled = true;
         }
 
-        private void AddProductRow()
+        private void HandleProductActionCellClick(DataGridViewCellMouseEventArgs e)
         {
-            Product product = new Product();
-            _products.Add(product);
-            RefreshProductsGrid();
-
-            int rowIndex = _products.Count - 1;
-            BeginInvoke(new Action(delegate { FocusProductRow(rowIndex); }));
-        }
-
-        private void FocusProductRow(int rowIndex)
-        {
-            if (rowIndex < 0 || rowIndex >= _products.Count || rowIndex >= _productsGrid.Rows.Count)
+            if (e.RowIndex < 0 || !IsProductActionColumn(e.ColumnIndex))
                 return;
 
-            if (_productsGrid.DataSource != null && _productsGrid.BindingContext != null)
-            {
-                CurrencyManager currencyManager =
-                    _productsGrid.BindingContext[_productsGrid.DataSource] as CurrencyManager;
-                if (currencyManager == null || currencyManager.Count <= rowIndex)
-                    return;
+            Rectangle cellBounds = _productsGrid.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
+            GetProductActionIconBounds(cellBounds, out Rectangle editBounds, out Rectangle deleteBounds);
+            Point clickPoint = new Point(cellBounds.Left + e.X, cellBounds.Top + e.Y);
 
-                currencyManager.Position = rowIndex;
+            if (deleteBounds.Contains(clickPoint))
+            {
+                BeginInvoke(new Action(delegate { DeleteProductAtRow(e.RowIndex); }));
+                return;
             }
 
-            _productsGrid.ClearSelection();
-            _productsGrid.CurrentCell = _productsGrid.Rows[rowIndex].Cells[2];
-            _productsGrid.Rows[rowIndex].Selected = true;
-            _productsGrid.Focus();
-            LoadSelectedProductForEdit();
+            if (editBounds.Contains(clickPoint))
+                OpenProductEditorAtRow(e.RowIndex);
+        }
+
+        private bool IsProductActionColumn(int columnIndex)
+        {
+            return columnIndex >= 0 &&
+                   columnIndex < _productsGrid.Columns.Count &&
+                   string.Equals(_productsGrid.Columns[columnIndex].Name, ProductActionColumnName,
+                       StringComparison.Ordinal);
+        }
+
+        private static void GetProductActionIconBounds(Rectangle cellBounds, out Rectangle editBounds,
+            out Rectangle deleteBounds)
+        {
+            int iconSize = 18;
+            int gap = 10;
+            int totalWidth = iconSize * 2 + gap;
+            int left = cellBounds.Left + Math.Max(0, (cellBounds.Width - totalWidth) / 2);
+            int top = cellBounds.Top + Math.Max(0, (cellBounds.Height - iconSize) / 2);
+
+            editBounds = new Rectangle(left, top, iconSize, iconSize);
+            deleteBounds = new Rectangle(left + iconSize + gap, top, iconSize, iconSize);
+        }
+
+        private void OpenProductEditorAtRow(int rowIndex)
+        {
+            if (rowIndex < 0 || rowIndex >= _products.Count)
+                return;
+
+            OpenProductEditor(_products[rowIndex]);
+        }
+
+        private void OpenProductEditor(Product source)
+        {
+            Product draft = source == null ? new Product() : CopyProduct(source);
+            using (ProductEditorDialog dialog = new ProductEditorDialog(draft))
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                SaveProduct(dialog.Product);
+            }
         }
 
         private void DeleteProductAtRow(int rowIndex)
@@ -572,7 +551,7 @@ namespace HansLaserDateSerialDemo
             if (product.Id > 0)
             {
                 DialogResult result = MessageBox.Show(
-                    this,
+                    GetRootOwner(this),
                     $"确认删除产品 {product.Name}？",
                     "产品配置",
                     MessageBoxButtons.YesNo,
@@ -593,12 +572,24 @@ namespace HansLaserDateSerialDemo
 
         private void RemoveProductFromGrid(Product product, int selectedProductId)
         {
-            bool wasEditing = ReferenceEquals(_editingProduct, product);
             _products.Remove(product);
             RefreshProductComboBox(selectedProductId);
             RefreshProductsGrid();
-            if (wasEditing)
-                ClearProductEditor();
+        }
+
+        private static Product CopyProduct(Product product)
+        {
+            return new Product
+            {
+                Id = product.Id,
+                Name = product.Name,
+                CustomerPartNumber = product.CustomerPartNumber,
+                Shipcode = product.Shipcode,
+                SerialStartValue = product.SerialStartValue,
+                CodeGeneratorType = product.CodeGeneratorType,
+                TemplatePath = product.TemplatePath,
+                Pattern = product.Pattern
+            };
         }
 
         private static string BuildProductLabel(Product product)
@@ -645,57 +636,10 @@ namespace HansLaserDateSerialDemo
             return _productComboBox.SelectedItem is Selection<Product> selection ? selection.Value : null;
         }
 
-        private void LoadSelectedProductForEdit()
-        {
-            if (_refreshingProductsGrid || _productsGrid.CurrentRow == null)
-                return;
-
-            int rowIndex = _productsGrid.CurrentRow.Index;
-            if (rowIndex < 0 || rowIndex >= _products.Count)
-                return;
-
-            _editingProduct = _products[rowIndex];
-
-            _productNameTextBox.Text = _editingProduct.Name;
-            _customerPartNumberTextBox.Text = _editingProduct.CustomerPartNumber;
-            _shipcodeBox.Value =
-                Math.Max(_shipcodeBox.Minimum, Math.Min(_shipcodeBox.Maximum, _editingProduct.Shipcode));
-            _serialStartValueBox.Value = Math.Max(_serialStartValueBox.Minimum,
-                Math.Min(_serialStartValueBox.Maximum,
-                    _editingProduct.SerialStartValue <= 0 ? 1 : _editingProduct.SerialStartValue));
-            SelectProductCodeGenerator(_editingProduct.CodeGeneratorType);
-            _productTemplatePathTextBox.Text = _editingProduct.TemplatePath;
-            _productPatternTextBox.Text = _editingProduct.Pattern;
-        }
-
-        private void ClearProductEditor()
-        {
-            _editingProduct = null;
-            _productNameTextBox.Clear();
-            _customerPartNumberTextBox.Clear();
-            _shipcodeBox.Value = 0;
-            _serialStartValueBox.Value = 1;
-            SelectProductCodeGenerator(CodeGeneratorTypes.EcoFlow);
-            _productTemplatePathTextBox.Clear();
-            _productPatternTextBox.Clear();
-            _productsGrid.ClearSelection();
-        }
-
-        private void SaveProduct()
+        private void SaveProduct(Product product)
         {
             try
             {
-                Product product = _editingProduct ?? new Product();
-                product.Name = _productNameTextBox.Text.Trim();
-                product.CustomerPartNumber = _customerPartNumberTextBox.Text.Trim();
-                product.Shipcode = Convert.ToInt32(_shipcodeBox.Value);
-                product.SerialStartValue = Convert.ToInt32(_serialStartValueBox.Value);
-                product.CodeGeneratorType = _productCodeGeneratorComboBox.SelectedItem == null
-                    ? CodeGeneratorTypes.EcoFlow
-                    : _productCodeGeneratorComboBox.SelectedItem.ToString();
-                product.TemplatePath = _productTemplatePathTextBox.Text.Trim();
-                product.Pattern = _productPatternTextBox.Text.Trim();
-
                 ValidateProduct(product);
 
                 using (AppDbContext dbContext = new AppDbContext())
@@ -709,11 +653,13 @@ namespace HansLaserDateSerialDemo
 
                 LoadProducts(product.Id);
                 SelectProduct(product.Id);
-                MessageBox.Show(this, "产品已保存。", "产品配置", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(GetRootOwner(this), "产品已保存。", "产品配置", MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"产品保存失败：{ex.Message}", "产品配置", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(GetRootOwner(this), $"产品保存失败：{ex.Message}", "产品配置", MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
             }
         }
 
@@ -803,25 +749,6 @@ namespace HansLaserDateSerialDemo
             }
         }
 
-        private void SelectProductCodeGenerator(string generatorType)
-        {
-            string value = string.IsNullOrWhiteSpace(generatorType)
-                ? CodeGeneratorTypes.EcoFlow
-                : generatorType;
-
-            for (int i = 0; i < _productCodeGeneratorComboBox.Items.Count; i++)
-            {
-                if (string.Equals(_productCodeGeneratorComboBox.Items[i].ToString(), value,
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    _productCodeGeneratorComboBox.SelectedIndex = i;
-                    return;
-                }
-            }
-
-            _productCodeGeneratorComboBox.SelectedIndex = 0;
-        }
-
         private static bool IsCodeGeneratorTypeValid(string generatorType)
         {
             return string.Equals(generatorType, CodeGeneratorTypes.Normal, StringComparison.OrdinalIgnoreCase) ||
@@ -854,7 +781,270 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"设置无效：{ex.Message}", "设置", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(GetRootOwner(this), $"设置无效：{ex.Message}", "设置", MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+
+        private static IWin32Window GetRootOwner(Form form)
+        {
+            Form owner = form;
+            while (owner != null && owner.Owner != null)
+                owner = owner.Owner;
+
+            return owner ?? form;
+        }
+
+        private sealed class ProductEditorDialog : Form
+        {
+            private readonly TextBox _nameTextBox;
+            private readonly TextBox _customerPartNumberTextBox;
+            private readonly NumericUpDown _shipcodeBox;
+            private readonly NumericUpDown _serialStartValueBox;
+            private readonly ComboBox _codeGeneratorComboBox;
+            private readonly TextBox _templatePathTextBox;
+            private readonly TextBox _patternTextBox;
+
+            public Product Product { get; private set; }
+
+            public ProductEditorDialog(Product product)
+            {
+                Product = product ?? throw new ArgumentNullException(nameof(product));
+
+                Text = Product.Id == 0 ? "新增产品" : "编辑产品";
+                StartPosition = FormStartPosition.CenterParent;
+                MinimumSize = new Size(620, 420);
+                Size = new Size(700, 460);
+                Font = new Font("Microsoft YaHei UI", 9F);
+
+                TableLayoutPanel shell = new TableLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    ColumnCount = 1,
+                    RowCount = 2,
+                    Padding = new Padding(14)
+                };
+                shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+                shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
+                Controls.Add(shell);
+
+                TableLayoutPanel grid = CreateDialogFormGrid(7);
+                grid.ColumnStyles[0].Width = 110;
+                shell.Controls.Add(grid, 0, 0);
+
+                _nameTextBox = AddDialogTextBox(grid, 0, "名称");
+                _customerPartNumberTextBox = AddDialogTextBox(grid, 1, "客户料号");
+                _shipcodeBox = AddDialogNumeric(grid, 2, "Shipcode", 0, 999999);
+                _serialStartValueBox = AddDialogNumeric(grid, 3, "起始流水", 1, 9999);
+                _codeGeneratorComboBox = AddDialogComboBox(grid, 4, "生成器");
+                _codeGeneratorComboBox.Items.Add(CodeGeneratorTypes.EcoFlow);
+                _codeGeneratorComboBox.Items.Add(CodeGeneratorTypes.Normal);
+                _templatePathTextBox = AddDialogPathTextBox(grid, 5, "打标模板",
+                    delegate(TextBox textBox) { BrowseFile(textBox, "选择打标模板", "打标模板 (*.HS)|*.HS|所有文件 (*.*)|*.*"); });
+                _patternTextBox = AddDialogTextBox(grid, 6, "Pattern");
+
+                FlowLayoutPanel buttons = new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    FlowDirection = FlowDirection.RightToLeft,
+                    WrapContents = false,
+                    Padding = new Padding(0, 10, 0, 0)
+                };
+                shell.Controls.Add(buttons, 0, 1);
+
+                Button saveButton = new Button { Width = 90, Height = 32, Text = "保存" };
+                saveButton.Click += delegate { SaveAndClose(); };
+                buttons.Controls.Add(saveButton);
+
+                Button cancelButton = new Button { Width = 90, Height = 32, Text = "取消" };
+                cancelButton.Click += delegate { DialogResult = DialogResult.Cancel; };
+                buttons.Controls.Add(cancelButton);
+
+                AcceptButton = saveButton;
+                CancelButton = cancelButton;
+
+                ShowProduct();
+            }
+
+            private void ShowProduct()
+            {
+                _nameTextBox.Text = Product.Name;
+                _customerPartNumberTextBox.Text = Product.CustomerPartNumber;
+                _shipcodeBox.Value = Math.Max(_shipcodeBox.Minimum, Math.Min(_shipcodeBox.Maximum, Product.Shipcode));
+                _serialStartValueBox.Value = Math.Max(_serialStartValueBox.Minimum,
+                    Math.Min(_serialStartValueBox.Maximum, Product.SerialStartValue <= 0 ? 1 : Product.SerialStartValue));
+                SelectCodeGenerator(Product.CodeGeneratorType);
+                _templatePathTextBox.Text = Product.TemplatePath;
+                _patternTextBox.Text = Product.Pattern;
+            }
+
+            private void SaveAndClose()
+            {
+                try
+                {
+                    Product.Name = _nameTextBox.Text.Trim();
+                    Product.CustomerPartNumber = _customerPartNumberTextBox.Text.Trim();
+                    Product.Shipcode = Convert.ToInt32(_shipcodeBox.Value);
+                    Product.SerialStartValue = Convert.ToInt32(_serialStartValueBox.Value);
+                    Product.CodeGeneratorType = _codeGeneratorComboBox.SelectedItem == null
+                        ? CodeGeneratorTypes.EcoFlow
+                        : _codeGeneratorComboBox.SelectedItem.ToString();
+                    Product.TemplatePath = _templatePathTextBox.Text.Trim();
+                    Product.Pattern = _patternTextBox.Text.Trim();
+
+                    ValidateProduct(Product);
+                    DialogResult = DialogResult.OK;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(GetRootOwner(this), $"产品设置无效：{ex.Message}", "产品配置",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            private void SelectCodeGenerator(string generatorType)
+            {
+                string value = string.IsNullOrWhiteSpace(generatorType)
+                    ? CodeGeneratorTypes.EcoFlow
+                    : generatorType;
+
+                for (int i = 0; i < _codeGeneratorComboBox.Items.Count; i++)
+                {
+                    if (string.Equals(_codeGeneratorComboBox.Items[i].ToString(), value,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        _codeGeneratorComboBox.SelectedIndex = i;
+                        return;
+                    }
+                }
+
+                _codeGeneratorComboBox.SelectedIndex = 0;
+            }
+
+            private static TableLayoutPanel CreateDialogFormGrid(int rows)
+            {
+                TableLayoutPanel grid = new TableLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    ColumnCount = 2,
+                    RowCount = rows,
+                    Padding = new Padding(12)
+                };
+                grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
+                grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+                for (int i = 0; i < rows; i++)
+                    grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
+                return grid;
+            }
+
+            private static void AddDialogLabel(TableLayoutPanel grid, int row, string label)
+            {
+                Label name = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Text = label,
+                    TextAlign = ContentAlignment.MiddleLeft
+                };
+                grid.Controls.Add(name, 0, row);
+            }
+
+            private static TextBox AddDialogTextBox(TableLayoutPanel grid, int row, string label)
+            {
+                AddDialogLabel(grid, row, label);
+                TextBox textBox = new TextBox
+                {
+                    Dock = DockStyle.Fill,
+                    Margin = new Padding(0, 8, 0, 0)
+                };
+                grid.Controls.Add(textBox, 1, row);
+                return textBox;
+            }
+
+            private static NumericUpDown AddDialogNumeric(TableLayoutPanel grid, int row, string label,
+                decimal minimum, decimal maximum)
+            {
+                AddDialogLabel(grid, row, label);
+                NumericUpDown numeric = new NumericUpDown
+                {
+                    Dock = DockStyle.Left,
+                    Minimum = minimum,
+                    Maximum = maximum,
+                    Width = 140,
+                    Margin = new Padding(0, 8, 0, 0)
+                };
+                grid.Controls.Add(numeric, 1, row);
+                return numeric;
+            }
+
+            private static ComboBox AddDialogComboBox(TableLayoutPanel grid, int row, string label)
+            {
+                AddDialogLabel(grid, row, label);
+                ComboBox comboBox = new ComboBox
+                {
+                    Dock = DockStyle.Fill,
+                    DropDownStyle = ComboBoxStyle.DropDownList,
+                    Margin = new Padding(0, 8, 0, 0)
+                };
+                grid.Controls.Add(comboBox, 1, row);
+                return comboBox;
+            }
+
+            private TextBox AddDialogPathTextBox(TableLayoutPanel grid, int row, string label,
+                Action<TextBox> browseAction)
+            {
+                AddDialogLabel(grid, row, label);
+
+                TableLayoutPanel panel = new TableLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    ColumnCount = 2,
+                    Margin = Padding.Empty
+                };
+                panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+                panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 78));
+                grid.Controls.Add(panel, 1, row);
+
+                TextBox textBox = new TextBox
+                {
+                    Dock = DockStyle.Fill,
+                    Margin = new Padding(0, 8, 8, 0)
+                };
+                panel.Controls.Add(textBox, 0, 0);
+
+                Button browseButton = new Button
+                {
+                    Dock = DockStyle.Fill,
+                    Margin = new Padding(0, 6, 0, 4),
+                    Text = "打开"
+                };
+                browseButton.Click += delegate { browseAction(textBox); };
+                panel.Controls.Add(browseButton, 1, 0);
+                return textBox;
+            }
+
+            private void BrowseFile(TextBox target, string title, string filter)
+            {
+                using (OpenFileDialog dialog = new OpenFileDialog())
+                {
+                    dialog.Title = title;
+                    dialog.Filter = filter;
+                    dialog.CheckFileExists = true;
+                    dialog.CheckPathExists = true;
+
+                    string currentPath = target.Text.Trim();
+                    if (File.Exists(currentPath))
+                    {
+                        dialog.FileName = currentPath;
+                        dialog.InitialDirectory = Path.GetDirectoryName(Path.GetFullPath(currentPath));
+                    }
+                    else if (Directory.Exists(currentPath))
+                    {
+                        dialog.InitialDirectory = currentPath;
+                    }
+
+                    if (dialog.ShowDialog(this) == DialogResult.OK)
+                        target.Text = dialog.FileName;
+                }
             }
         }
 
