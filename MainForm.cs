@@ -33,6 +33,7 @@ namespace HansLaserDateSerialDemo
 
         public MainForm()
         {
+            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
             Text = $@"激光打标应用 v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}";
             StartPosition = FormStartPosition.CenterScreen;
             MinimumSize = new Size(980, 680);

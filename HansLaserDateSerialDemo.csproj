@@ -8,6 +8,7 @@
         <RootNamespace>HansLaserDateSerialDemo</RootNamespace>
         <AssemblyName>LaserMarkingApp</AssemblyName>
         <Version>1.0.3</Version>
+        <ApplicationIcon>favicon.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,6 +17,9 @@
         </None>
         <None Update="README.md">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="favicon.ico">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 
