@@ -12,8 +12,8 @@ namespace HansLaserDateSerialDemo
         private const string ConfigFile = "config.json";
         private const string AuditFile = @".\mark-audit.csv";
 
-        private readonly ToolStripButton _settingsButton;
-        private readonly ToolStripButton _historyButton;
+        private readonly ToolStripMenuItem _settingsMenuItem;
+        private readonly ToolStripMenuItem _viewMenuItem;
         private Label _codeValue;
         private Label _dateValue;
         private Label _serialValue;
@@ -48,49 +48,40 @@ namespace HansLaserDateSerialDemo
                 Padding = Padding.Empty
             };
             shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
             shell.RowStyles.Add(new RowStyle(SizeType.Percent, 136F));
             Controls.Add(shell);
 
-            ToolStrip toolStrip = new ToolStrip
+            MenuStrip menuStrip = new MenuStrip
             {
                 Dock = DockStyle.Fill,
-                GripStyle = ToolStripGripStyle.Hidden,
-                AutoSize = false,
-                Height = 44,
+                AutoSize = true,
                 Margin = Padding.Empty,
-                Padding = new Padding(8, 6, 8, 6),
-                BackColor = Color.FromArgb(245, 247, 250)
+                Padding = new Padding(4, 2, 0, 2)
             };
-            _settingsButton = new ToolStripButton("设置...")
+            _settingsMenuItem = new ToolStripMenuItem("设置")
             {
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                AutoSize = false,
-                Width = 96,
-                Height = 32,
-                Margin = new Padding(0, 0, 8, 0),
-                Padding = new Padding(12, 0, 12, 0),
-                Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
-                ToolTipText = "打开设置并应用配置"
+                Margin = Padding.Empty,
+                Padding = new Padding(8, 0, 8, 0),
+                ToolTipText = "打开设置"
             };
-            _settingsButton.Click += async delegate { await OpenSettingsAsync(); };
-            toolStrip.Items.Add(_settingsButton);
+            _settingsMenuItem.DropDownItems.Add("运行设置", null,
+                async delegate { await OpenSettingsAsync(SettingsPage.RunSettings); });
+            _settingsMenuItem.DropDownItems.Add("产品配置", null,
+                async delegate { await OpenSettingsAsync(SettingsPage.ProductConfiguration); });
+            menuStrip.Items.Add(_settingsMenuItem);
 
-            _historyButton = new ToolStripButton("历史记录")
+            _viewMenuItem = new ToolStripMenuItem("查看")
             {
-                DisplayStyle = ToolStripItemDisplayStyle.Text,
-                AutoSize = false,
-                Width = 96,
-                Height = 32,
-                Margin = new Padding(0, 0, 8, 0),
-                Padding = new Padding(12, 0, 12, 0),
-                Font = new Font("Microsoft YaHei UI", 10F, FontStyle.Bold),
-                ToolTipText = "查看历史打标记录"
+                Margin = Padding.Empty,
+                Padding = new Padding(8, 0, 8, 0),
+                ToolTipText = "查看记录"
             };
-            _historyButton.Click += delegate { OpenHistory(); };
-            toolStrip.Items.Add(_historyButton);
+            _viewMenuItem.DropDownItems.Add("历史记录", null, delegate { OpenHistory(); });
+            menuStrip.Items.Add(_viewMenuItem);
+            MainMenuStrip = menuStrip;
 
-            shell.Controls.Add(toolStrip, 0, 0);
+            shell.Controls.Add(menuStrip, 0, 0);
 
             Panel content = new Panel
             {
@@ -333,7 +324,7 @@ namespace HansLaserDateSerialDemo
             }
         }
 
-        private async Task OpenSettingsAsync()
+        private async Task OpenSettingsAsync(SettingsPage initialPage)
         {
             if (_busy)
                 return;
@@ -345,11 +336,11 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"载入配置失败：{ex.Message}", "设置", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, $"载入配置失败：{ex.Message}", "设置", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            using (SettingsDialog dialog = new SettingsDialog(configuration))
+            using (SettingsDialog dialog = new SettingsDialog(configuration, initialPage))
             {
                 if (dialog.ShowDialog(this) != DialogResult.OK)
                     return;
@@ -369,6 +360,7 @@ namespace HansLaserDateSerialDemo
                 var messageBoxButtons =
                     errorMessage.Contains("dll") ? MessageBoxButtons.RetryCancel : MessageBoxButtons.OK;
                 DialogResult result = MessageBox.Show(
+                    this,
                     $"启动失败：{errorMessage}",
                     "启动",
                     messageBoxButtons,
@@ -578,6 +570,7 @@ namespace HansLaserDateSerialDemo
                 return;
 
             DialogResult result = MessageBox.Show(
+                this,
                 $"确认编号 {_reservation.Code} 已经使用或必须跳过？",
                 "确认已用/跳过",
                 MessageBoxButtons.YesNo,
@@ -610,17 +603,18 @@ namespace HansLaserDateSerialDemo
 
             if (_api == null || _configuration == null || _product == null)
             {
-                MessageBox.Show("请先启动产品配置和模板，再执行重新打标。", "历史重打标", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "请先启动产品配置和模板，再执行重新打标。", "历史重打标", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (source.ProductId != _product.Id)
             {
-                MessageBox.Show("请先启动该历史记录所属产品的配置和模板，再执行重新打标。", "历史重打标", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "请先启动该历史记录所属产品的配置和模板，再执行重新打标。", "历史重打标", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             DialogResult result = MessageBox.Show(
+                this,
                 $"确认重新打标历史编号 {source.Code}？",
                 "历史重打标",
                 MessageBoxButtons.YesNo,
@@ -746,8 +740,8 @@ namespace HansLaserDateSerialDemo
         private void UpdateActionButtons()
         {
             bool ready = !_busy && _api != null && _reservation != null;
-            _settingsButton.Enabled = !_busy;
-            _historyButton.Enabled = !_busy;
+            _settingsMenuItem.Enabled = !_busy;
+            _viewMenuItem.Enabled = !_busy;
             _previewButton.Enabled = ready;
             _markButton.Enabled = ready;
             _skipButton.Enabled = ready;

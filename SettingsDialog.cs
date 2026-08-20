@@ -8,6 +8,12 @@ using System.Windows.Forms;
 
 namespace HansLaserDateSerialDemo
 {
+    internal enum SettingsPage
+    {
+        RunSettings,
+        ProductConfiguration
+    }
+
     internal sealed class SettingsDialog : Form
     {
         private readonly TextBox _machinePathTextBox;
@@ -24,6 +30,7 @@ namespace HansLaserDateSerialDemo
         private readonly ComboBox _productCodeGeneratorComboBox;
         private readonly TextBox _productTemplatePathTextBox;
         private readonly TextBox _productPatternTextBox;
+        private readonly SettingsPage _initialPage;
 
         private List<Product> _products = new List<Product>();
         private Product _editingProduct;
@@ -43,11 +50,17 @@ namespace HansLaserDateSerialDemo
         }
 
         public SettingsDialog(AppConfiguration configuration)
+            : this(configuration, SettingsPage.RunSettings)
+        {
+        }
+
+        public SettingsDialog(AppConfiguration configuration, SettingsPage initialPage)
         {
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
 
-            Text = "设置";
+            _initialPage = initialPage;
+            Text = initialPage == SettingsPage.ProductConfiguration ? "产品配置" : "运行设置";
             StartPosition = FormStartPosition.CenterParent;
             MinimumSize = new Size(760, 620);
             Size = new Size(860, 700);
@@ -64,17 +77,7 @@ namespace HansLaserDateSerialDemo
             shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));
             Controls.Add(shell);
 
-            TabControl tabs = new TabControl
-            {
-                Dock = DockStyle.Fill
-            };
-            shell.Controls.Add(tabs, 0, 0);
-
-            TabPage settingsPage = new TabPage("运行设置");
-            tabs.TabPages.Add(settingsPage);
-
             FlowLayoutPanel settingsRoot = CreateVerticalFlow();
-            settingsPage.Controls.Add(settingsRoot);
 
             GroupBox basicBox = AddGroup(settingsRoot, "基础配置", 192);
             TableLayoutPanel basicGrid = CreateFormGrid(3);
@@ -141,9 +144,6 @@ namespace HansLaserDateSerialDemo
             };
             pedalGrid.Controls.Add(secondsLabel, 3, 0);
 
-            TabPage productsPage = new TabPage("产品配置");
-            tabs.TabPages.Add(productsPage);
-
             TableLayoutPanel productsRoot = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -153,7 +153,6 @@ namespace HansLaserDateSerialDemo
             };
             productsRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             productsRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 380));
-            productsPage.Controls.Add(productsRoot);
 
             _productsGrid = new DataGridView
             {
@@ -280,6 +279,9 @@ namespace HansLaserDateSerialDemo
 
             LoadProducts(configuration.ProductId);
             ShowConfiguration(configuration);
+            shell.Controls.Add(initialPage == SettingsPage.ProductConfiguration
+                ? (Control)productsRoot
+                : settingsRoot, 0, 0);
         }
 
         private static FlowLayoutPanel CreateVerticalFlow()
@@ -570,6 +572,7 @@ namespace HansLaserDateSerialDemo
             if (product.Id > 0)
             {
                 DialogResult result = MessageBox.Show(
+                    this,
                     $"确认删除产品 {product.Name}？",
                     "产品配置",
                     MessageBoxButtons.YesNo,
@@ -706,11 +709,11 @@ namespace HansLaserDateSerialDemo
 
                 LoadProducts(product.Id);
                 SelectProduct(product.Id);
-                MessageBox.Show("产品已保存。", "产品配置", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "产品已保存。", "产品配置", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"产品保存失败：{ex.Message}", "产品配置", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, $"产品保存失败：{ex.Message}", "产品配置", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -827,11 +830,14 @@ namespace HansLaserDateSerialDemo
 
         private void SaveAndClose()
         {
+            if (_initialPage != SettingsPage.RunSettings)
+                return;
+
             try
             {
                 Product product = GetSelectedProduct();
                 if (product == null)
-                    throw new InvalidDataException("请先选择产品。");
+                    return;
 
                 AppConfiguration configuration = new AppConfiguration
                 {
@@ -848,7 +854,7 @@ namespace HansLaserDateSerialDemo
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"设置无效：{ex.Message}", "设置", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, $"设置无效：{ex.Message}", "设置", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
