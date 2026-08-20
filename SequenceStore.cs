@@ -152,7 +152,7 @@ namespace HansLaserDateSerialDemo
             int serial = state.NextSerial;
             while (serial >= 1 && serial <= 9999)
             {
-                string code = _codeGenerator.Build(today, serial);
+                string code = _codeGenerator.Build(now, serial);
                 MarkingRecord existing = dbContext.MarkingRecords
                     .SingleOrDefault(record => record.Code == code);
 
