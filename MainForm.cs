@@ -97,10 +97,11 @@ namespace HansLaserDateSerialDemo
             Load += async delegate
             {
                 LoadConfiguration();
-                if (_configuration.ProductId<=0)
+                if (_configuration.ProductId <= 0)
                 {
                     return;
                 }
+
                 await StartWithSavedConfigurationWithRetryAsync();
             };
             FormClosing += delegate { DisposeApi(); };
@@ -334,7 +335,7 @@ namespace HansLaserDateSerialDemo
             AppConfiguration configuration;
             try
             {
-                configuration = _configuration ?? LoadOrCreateConfiguration();
+                configuration = LoadOrCreateConfiguration();
             }
             catch (Exception ex)
             {
@@ -342,13 +343,11 @@ namespace HansLaserDateSerialDemo
                 return;
             }
 
-            using (SettingsDialog dialog = new SettingsDialog(configuration, initialPage))
-            {
-                if (dialog.ShowDialog(this) != DialogResult.OK)
-                    return;
+            using SettingsDialog dialog = new SettingsDialog(configuration, initialPage);
+            if (await dialog.ShowDialogAsync(this) != DialogResult.OK)
+                return;
 
-                await ApplyConfigurationAsync(dialog.Configuration, true);
-            }
+            await ApplyConfigurationAsync(dialog.Configuration, true);
         }
 
         private async Task StartWithSavedConfigurationWithRetryAsync()
@@ -611,7 +610,8 @@ namespace HansLaserDateSerialDemo
 
             if (source.ProductId != _product.Id)
             {
-                MessageBox.Show(this, "请先启动该历史记录所属产品的配置和模板，再执行重新打标。", "历史重打标", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, "请先启动该历史记录所属产品的配置和模板，再执行重新打标。", "历史重打标", MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
                 return;
             }
 

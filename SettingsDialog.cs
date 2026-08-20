@@ -35,11 +35,6 @@ namespace HansLaserDateSerialDemo
             SaveAndClose();
         }
 
-        public SettingsDialog(AppConfiguration configuration)
-            : this(configuration, SettingsPage.RunSettings)
-        {
-        }
-
         public SettingsDialog(AppConfiguration configuration, SettingsPage initialPage)
         {
             if (configuration == null)
@@ -736,6 +731,12 @@ namespace HansLaserDateSerialDemo
                     ProductId = product.Id
                 };
 
+                if (Configuration == configuration)
+                {
+                    DialogResult = DialogResult.Cancel;
+                    return;
+                }
+
                 Configuration = AppConfiguration.LoadFromJson(configuration.ToJson(), "config.json");
                 DialogResult = DialogResult.OK;
             }
@@ -832,7 +833,8 @@ namespace HansLaserDateSerialDemo
                 _customerPartNumberTextBox.Text = Product.CustomerPartNumber;
                 _shipcodeBox.Value = Math.Max(_shipcodeBox.Minimum, Math.Min(_shipcodeBox.Maximum, Product.Shipcode));
                 _serialStartValueBox.Value = Math.Max(_serialStartValueBox.Minimum,
-                    Math.Min(_serialStartValueBox.Maximum, Product.SerialStartValue <= 0 ? 1 : Product.SerialStartValue));
+                    Math.Min(_serialStartValueBox.Maximum,
+                        Product.SerialStartValue <= 0 ? 1 : Product.SerialStartValue));
                 SelectCodeGenerator(Product.CodeGeneratorType);
                 _templatePathTextBox.Text = Product.TemplatePath;
                 _patternTextBox.Text = Product.Pattern;
@@ -1007,6 +1009,5 @@ namespace HansLaserDateSerialDemo
                 }
             }
         }
-
     }
 }
