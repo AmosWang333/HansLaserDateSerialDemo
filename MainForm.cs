@@ -104,6 +104,10 @@ namespace HansLaserDateSerialDemo
             Load += async delegate
             {
                 LoadConfiguration();
+                if (_configuration.ProductId<=0)
+                {
+                    return;
+                }
                 await StartWithSavedConfigurationWithRetryAsync();
             };
             FormClosing += delegate { DisposeApi(); };
