@@ -11,13 +11,9 @@ namespace HansLaserDateSerialDemo
     {
         public const bool DefaultUseFootPedal = false;
         public const int DefaultFootPedalTimeoutMs = 10 * 60 * 1000;
-        public const string DefaultCodeGeneratorType = CodeGeneratorTypes.EcoFlow;
         public const int DefaultProductId = 0;
 
-        public string DllPath
-        {
-            get { return Path.Combine(MachinePath ?? string.Empty, "HansAdvInterface.dll"); }
-        }
+        public string DllPath => Path.Combine(MachinePath ?? string.Empty, "HansAdvInterface.dll");
 
         [DataMember(IsRequired = true, Order = 1)]
         public string MachinePath { get; set; }
