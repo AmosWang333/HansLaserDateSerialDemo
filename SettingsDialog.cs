@@ -36,6 +36,12 @@ namespace HansLaserDateSerialDemo
 
         public AppConfiguration Configuration { get; private set; }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            SaveAndClose();
+        }
+
         public SettingsDialog(AppConfiguration configuration)
         {
             if (configuration == null)
@@ -86,7 +92,7 @@ namespace HansLaserDateSerialDemo
             TableLayoutPanel generatorGrid = CreateFormGrid(1);
             generatorBox.Controls.Add(generatorGrid);
 
-            _productComboBox = AddComboBox(generatorGrid, 0, "产品");
+            _productComboBox = AddComboBox(generatorGrid, 0, "选择产品");
 
             GroupBox pedalBox = AddGroup(settingsRoot, "脚踏触发", 104);
             TableLayoutPanel pedalGrid = new TableLayoutPanel
@@ -261,16 +267,16 @@ namespace HansLaserDateSerialDemo
             };
             shell.Controls.Add(buttons, 0, 1);
 
-            Button saveButton = new Button { Width = 120, Height = 34, Text = "保存并应用" };
-            saveButton.Click += delegate { SaveAndClose(); };
-            buttons.Controls.Add(saveButton);
-
-            Button cancelButton = new Button { Width = 90, Height = 34, Text = "取消" };
-            cancelButton.Click += delegate { DialogResult = DialogResult.Cancel; };
-            buttons.Controls.Add(cancelButton);
-
-            AcceptButton = saveButton;
-            CancelButton = cancelButton;
+            // Button saveButton = new Button { Width = 120, Height = 34, Text = "保存并应用" };
+            // saveButton.Click += delegate { SaveAndClose(); };
+            // buttons.Controls.Add(saveButton);
+            //
+            // Button cancelButton = new Button { Width = 90, Height = 34, Text = "取消" };
+            // cancelButton.Click += delegate { DialogResult = DialogResult.Cancel; };
+            // buttons.Controls.Add(cancelButton);
+            //
+            // AcceptButton = saveButton;
+            // CancelButton = cancelButton;
 
             LoadProducts(configuration.ProductId);
             ShowConfiguration(configuration);
