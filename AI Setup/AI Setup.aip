@@ -31,7 +31,7 @@
     <ROW Property="WindowsTypeNT60Display" MultiBuildValue="DefaultBuild:Windows Vista/Server 2008" ValueLocId="-"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
-    <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1" DirectoryOptions="3"/>
+    <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1" DirectoryOptions="2"/>
     <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
     <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
     <ROW Directory="StartMenuFolder" Directory_Parent="TARGETDIR" DefaultDir="STARTM~1|StartMenuFolder" IsPseudoRoot="1"/>
@@ -140,7 +140,7 @@
     <ATTRIBUTE name="CurrentFeature" value="MainFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
-    <ROW File="config.json" Component_="config.json" FileName="CONFIG~1.JSO|config.json" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Release\net10.0-windows\publish\config.json" SelfReg="false"/>
+    <ROW File="config.json" Component_="config.json" FileName="CONFIG~1.JSO|config.json" Attributes="0" SourcePath="..\bin\Release\net10.0-windows\publish\config.json" SelfReg="false"/>
     <ROW File="favicon.ico" Component_="config.json" FileName="favicon.ico" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Release\net10.0-windows\publish\favicon.ico" SelfReg="false"/>
     <ROW File="LaserMarkingApp.deps.json" Component_="config.json" FileName="LASERM~1.JSO|LaserMarkingApp.deps.json" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Release\net10.0-windows\publish\LaserMarkingApp.deps.json" SelfReg="false"/>
     <ROW File="LaserMarkingApp.dll" Component_="LaserMarkingApp.dll" FileName="LASERM~1.DLL|LaserMarkingApp.dll" Version="65535.65535.65535.65535" Attributes="0" SourcePath="..\bin\Release\net10.0-windows\publish\LaserMarkingApp.dll" SelfReg="false"/>
