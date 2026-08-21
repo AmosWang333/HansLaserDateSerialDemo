@@ -48,7 +48,6 @@ PublishScripts/
 _ReSharper*/
 *.DotSettings.user
 *.dotCover
-.idea/
 
 # Generated files
 Generated\ Files/
