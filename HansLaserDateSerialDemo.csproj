@@ -9,6 +9,7 @@
         <AssemblyName>LaserMarkingApp</AssemblyName>
         <Version>1.0.3</Version>
         <ApplicationIcon>favicon.ico</ApplicationIcon>
+        <Platforms>AnyCPU;x86;x64</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,6 +25,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
     </ItemGroup>
 </Project>
