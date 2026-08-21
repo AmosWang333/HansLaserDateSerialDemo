@@ -1,0 +1,21 @@
+<Solution>
+    <Configurations>
+        <BuildType Name="All" />
+        <BuildType Name="Debug" />
+        <BuildType Name="Release" />
+        <Platform Name="Any CPU" />
+        <Platform Name="ARM" />
+        <Platform Name="ARM64" />
+        <Platform Name="x64" />
+        <Platform Name="x86" />
+    </Configurations>
+    <Project Path="AI Setup/AI Setup.aiproj" Type="840c416c-b8f3-42bc-b0dd-f6bb14c9f8cb" Id="41e7016f-f84a-4f6f-9953-e9e9b43f4346">
+        <BuildType Project="All" />
+        <Platform Project="?" />
+    </Project>
+    <Project Path="HansLaserDateSerialDemo.csproj">
+        <BuildType Solution="All|*" Project="Debug" />
+        <Platform Solution="*|x64" Project="x64" />
+        <Platform Solution="*|x86" Project="x86" />
+    </Project>
+</Solution>
