@@ -37,13 +37,14 @@ namespace HansLaserDateSerialDemo
 
         public ICodeGenerator Init(string pattern)
         {
-            _pattern = pattern;
+            _pattern = pattern.Replace("JJJ", "{1:000}");
             return this;
         }
 
         public string Build(DateTime date, int serial)
         {
-            return string.Format(date.ToString(_pattern), serial);
+            var dayOfYear = date.DayOfYear;
+            return string.Format(date.ToString(_pattern), serial, dayOfYear);
         }
     }
 
